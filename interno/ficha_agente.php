@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
  $rangosPoliciales = require __DIR__ . '/../config/ranks.php';
 

@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => {
     let multas = window.sispolMultasGeneralesData || [];
     const fineList = document.getElementById("fineList");
     const searchNombre = document.getElementById("searchNombre");

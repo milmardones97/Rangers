@@ -1,4 +1,4 @@
-﻿document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
     var casos = window.sispolInvestigacionesData || [];
     var selectedCaseId = window.sispolSelectedCaseId || "";
     var q = document.getElementById("q");

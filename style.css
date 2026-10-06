@@ -1,0 +1,367 @@
+:root{
+    --bg: #000000;
+    --green: #b7d94b;
+    --green-strong: #a9d12f;
+    --green-soft: #d4e78a;
+    --shadow: rgba(183, 217, 75, 0.25);
+}
+
+*{
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html,
+body{
+    width: 100%;
+    height: 100%;
+}
+
+body{
+    background: var(--bg);
+    color: var(--green);
+    font-family: "Courier New", monospace;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.screen{
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(6px, 1.2vw, 14px);
+    background:
+        radial-gradient(circle at center, rgba(25,25,25,0.14) 0%, rgba(0,0,0,1) 72%);
+}
+
+.wrapper{
+    width: min(100%, 940px);
+    max-height: calc(100vh - 12px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(8px, 1.4vh, 14px);
+    padding: clamp(8px, 1.4vw, 18px) clamp(10px, 1.8vw, 24px) clamp(10px, 1.6vw, 20px);
+    text-align: center;
+    overflow: hidden;
+}
+
+.badge-area{
+    margin: 0;
+}
+
+.title{
+    font-size: clamp(15px, 1.4vw + 1.4vh, 27px);
+    letter-spacing: clamp(2px, 0.45vw, 8px);
+    line-height: 1.1;
+    text-transform: uppercase;
+    color: var(--green);
+    text-shadow: 0 0 8px var(--shadow);
+}
+
+.login-box{
+    width: min(100%, 860px);
+    margin: 0 auto;
+    border: clamp(4px, 0.55vw, 9px) solid var(--green);
+    padding: clamp(12px, 1.5vw + 0.8vh, 24px) clamp(12px, 1.8vw, 24px) clamp(12px, 1.4vw, 20px);
+    background: #000;
+    text-align: left;
+    box-shadow: 0 0 18px rgba(169, 209, 47, 0.08);
+}
+
+.row{
+    display: flex;
+    align-items: center;
+    gap: clamp(10px, 1.2vw, 16px);
+    margin-bottom: clamp(12px, 1.5vh, 18px);
+    width: 100%;
+}
+
+.row label{
+    flex: 0 0 clamp(130px, 22%, 220px);
+    font-size: clamp(14px, 1vw + 1.2vh, 26px);
+    font-weight: bold;
+    color: var(--green);
+    letter-spacing: 1px;
+}
+
+.field-wrap{
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#usuario{
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid rgba(183, 217, 75, 0.45);
+    outline: none;
+    color: var(--green-soft);
+    font-size: clamp(14px, 0.9vw + 1.1vh, 24px);
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    padding: 3px 2px 5px;
+    text-transform: uppercase;
+}
+
+#usuario:focus{
+    border-bottom-color: var(--green);
+}
+
+.password-wrapper{
+    position: relative;
+    min-height: clamp(24px, 3.2vh, 34px);
+}
+
+#password{
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: transparent;
+    caret-color: var(--green);
+    font-size: clamp(14px, 0.9vw + 1.1vh, 24px);
+    font-family: "Courier New", monospace;
+    padding: 3px 2px 5px;
+    z-index: 1;
+}
+
+#password::selection{
+    background: transparent;
+    color: transparent;
+}
+
+.fake-pass{
+    position: relative;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    min-height: clamp(24px, 3.2vh, 34px);
+    line-height: clamp(24px, 3.2vh, 34px);
+    color: var(--green-soft);
+    font-size: clamp(14px, 0.9vw + 1.1vh, 24px);
+    font-family: "Courier New", monospace;
+    font-weight: bold;
+    letter-spacing: clamp(1px, 0.22vw, 3px);
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    border-bottom: 2px solid rgba(183, 217, 75, 0.45);
+    padding: 0 2px 2px;
+}
+
+.actions{
+    text-align: center;
+    margin-top: clamp(6px, 1vh, 12px);
+}
+
+.actions button{
+    background: transparent;
+    border: 3px solid var(--green);
+    color: var(--green);
+    padding: clamp(6px, 0.8vh, 9px) clamp(18px, 1.6vw, 28px);
+    font-size: clamp(13px, 0.8vw + 0.9vh, 18px);
+    font-weight: bold;
+    cursor: pointer;
+    font-family: "Courier New", monospace;
+    letter-spacing: 1px;
+}
+
+.actions button:hover,
+.actions button:focus{
+    background: var(--green);
+    color: #000;
+}
+
+.loading-line{
+    display: none;
+    margin-top: clamp(8px, 1vh, 14px);
+    text-align: center;
+    font-size: clamp(14px, 0.8vw + 1vh, 20px);
+    font-weight: bold;
+    color: var(--green);
+}
+
+.loading-line.active{
+    display: block;
+}
+
+.loading-spinner{
+    display: inline-block;
+    min-width: 34px;
+    margin-left: 8px;
+    text-align: left;
+}
+
+.error-box{
+    margin-top: 10px;
+    color: #ff6666;
+    text-align: center;
+    font-size: clamp(12px, 0.8vw + 0.7vh, 16px);
+}
+
+.bottom-line{
+    width: min(100%, 860px);
+    height: clamp(5px, 0.7vh, 10px);
+    margin: 0 auto;
+    background: repeating-linear-gradient(
+        to right,
+        var(--green) 0 8px,
+        transparent 8px 16px
+    );
+    filter: drop-shadow(0 0 5px var(--shadow));
+}
+
+body::after{
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.02) 0 1px,
+        rgba(0,0,0,0.02) 1px 3px
+    );
+    opacity: 0.12;
+}
+
+.logo-img{
+    width: clamp(120px, 20vh, 260px);
+    max-width: 44%;
+    display: block;
+    margin: 0 auto;
+    filter:
+        drop-shadow(0 0 6px #b7d94b)
+        drop-shadow(0 0 12px rgba(183,217,75,0.4));
+}
+
+@media (max-width: 780px), (max-height: 720px){
+    .wrapper{
+        width: min(100%, 760px);
+        gap: 8px;
+        padding: 8px 10px 10px;
+    }
+
+    .title{
+        font-size: clamp(13px, 0.8vw + 1vh, 20px);
+        letter-spacing: clamp(2px, 0.3vw, 4px);
+    }
+
+    .login-box{
+        width: min(100%, 720px);
+        border-width: 4px;
+        padding: 10px 10px 12px;
+    }
+
+    .row{
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+
+    .row label{
+        flex-basis: 110px;
+        font-size: clamp(12px, 0.8vw + 0.9vh, 18px);
+    }
+
+    #usuario,
+    #password,
+    .fake-pass{
+        font-size: clamp(12px, 0.8vw + 0.85vh, 18px);
+    }
+
+    .password-wrapper,
+    .fake-pass{
+        min-height: 22px;
+        line-height: 22px;
+    }
+
+    .actions button{
+        font-size: 12px;
+        padding: 6px 14px;
+    }
+
+    .bottom-line{
+        width: min(100%, 720px);
+    }
+}
+
+@media (max-width: 560px), (max-height: 560px){
+    .screen{
+        padding: 4px;
+    }
+
+    .wrapper{
+        width: 100%;
+        max-height: calc(100vh - 8px);
+        padding: 6px 6px 8px;
+        gap: 6px;
+    }
+
+    .logo-img{
+        width: clamp(82px, 14vh, 140px);
+        max-width: 34%;
+    }
+
+    .title{
+        font-size: 11px;
+        letter-spacing: 1.5px;
+    }
+
+    .login-box{
+        width: 100%;
+        border-width: 3px;
+        padding: 8px 8px 10px;
+    }
+
+    .row{
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+        margin-bottom: 9px;
+    }
+
+    .row label{
+        flex: none;
+        font-size: 11px;
+    }
+
+    #usuario,
+    #password,
+    .fake-pass{
+        font-size: 11px;
+    }
+
+    .password-wrapper,
+    .fake-pass{
+        min-height: 20px;
+        line-height: 20px;
+    }
+
+    .actions{
+        margin-top: 4px;
+    }
+
+    .actions button{
+        width: 100%;
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+
+    .loading-line{
+        font-size: 11px;
+        margin-top: 6px;
+    }
+
+    .bottom-line{
+        height: 4px;
+    }
+}

@@ -1,0 +1,20 @@
+SISPOL Rangers
+=============
+
+Aplicación PHP para control policial con Firebase Realtime Database.
+
+Estructura principal:
+- config/firebase.php: URL y credencial de Firebase.
+- lib/database.php: cliente REST de Firebase.
+- lib/: reglas de negocio para usuarios, vehículos, multas, criminales e investigaciones.
+- api/: endpoints JSON consumidos por las pantallas.
+- database/firebase_setup.php: inicialización de datos básicos.
+
+Configuración:
+1. Indica la URL de tu Realtime Database en config/firebase.php.
+2. Configura auth_token si las reglas de Firebase lo requieren.
+3. Ejecuta una vez database/firebase_setup.php.
+4. Ingresa con MILTON / 123456 y cambia la contraseña inicial.
+
+Los datos se guardan bajo los nodos agents, users, vehicles, traffic_fines,
+general_fines, criminals, criminal_crimes, investigations e investigation_updates.

@@ -1,0 +1,13 @@
+# Configuración local y credenciales
+.env
+.env.*
+!.env.example
+.vercel/
+
+# Dependencias, registros y archivos temporales
+node_modules/
+vendor/
+*.log
+*.tmp
+Thumbs.db
+Desktop.ini

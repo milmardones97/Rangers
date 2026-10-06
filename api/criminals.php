@@ -10,6 +10,7 @@ if (!isset($_SESSION['usuario'])) {
 
 require_once __DIR__ . '/../lib/criminals.php';
 require_once __DIR__ . '/../lib/users_admin.php';
+require_once __DIR__ . '/../lib/discord.php';
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -38,6 +39,7 @@ try {
     if ($action === 'create') {
         $item = rangers_create_criminal($payload);
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: CREÓ PERFIL ' . ($item['nombre'] ?? ''));
+        rangers_notify_criminal_profile_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -68,6 +70,7 @@ try {
             (string) ($payload['sancion'] ?? '')
         );
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: AÑADIÓ CRIMEN A ' . ($item['nombre'] ?? ''));
+        rangers_notify_criminal_history_discord($item, (string) $payload['delito'], (string) ($payload['sancion'] ?? ''), strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
 
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;

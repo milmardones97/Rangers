@@ -10,6 +10,7 @@ if (!isset($_SESSION['usuario'])) {
 
 require_once __DIR__ . '/../lib/fines.php';
 require_once __DIR__ . '/../lib/users_admin.php';
+require_once __DIR__ . '/../lib/discord.php';
 require_once __DIR__ . '/../interno/access_control.php';
 
 try {
@@ -58,6 +59,7 @@ try {
         strtoupper(trim((string) ($payload['agente'] ?? ($_SESSION['usuario'] ?? 'USUARIO'))))
     );
     rangers_log_sispol_activity((string)$_SESSION['usuario'], 'MULTAS GENERALES: CREÓ ' . ($item['id'] ?? 'REGISTRO'));
+    rangers_notify_general_fine_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
 
     echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $exception) {

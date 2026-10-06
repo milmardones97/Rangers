@@ -562,7 +562,7 @@ try { $agentesDb = rangers_fetch_user_control_records(); if ($agentesDb !== []) 
 <script>
 window.sispolControlUsuariosData = <?php echo json_encode($agentes, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/control_usuarios_db.js?v=<?php echo (int) filemtime(__DIR__ . '/../js/control_usuarios_db.js'); ?>"></script>
+<script src="../js/control_usuarios_db.js?v=20261006-3"></script>
 <script src="../loader_sispol.js"></script>
 </body>
 </html>

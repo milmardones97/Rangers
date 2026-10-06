@@ -15,7 +15,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const setStatus = (text, type = '') => { status.textContent = text; status.className = 'status-text ' + type; };
     const setFormMode = (mode = 'locked') => {
         const editable = mode === 'create' || mode === 'edit';
-        [name, rank, badge, password, imageUrl].forEach(field => { field.disabled = !editable; });
+        [name, rank, badge, password, imageUrl].forEach(field => {
+            field.disabled = !editable;
+            if (editable) field.removeAttribute('disabled');
+            else field.setAttribute('disabled', 'disabled');
+        });
         level.disabled = true;
         save.disabled = !editable;
         disable.disabled = mode !== 'edit';

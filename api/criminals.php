@@ -57,6 +57,33 @@ try {
         exit;
     }
 
+    if ($action === 'save_history') {
+        if (empty($payload['id']) || empty($payload['status'])) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'message' => 'Selecciona un status para guardar.']);
+            exit;
+        }
+
+        $crime = trim((string) ($payload['delito'] ?? ''));
+        $sanction = trim((string) ($payload['sancion'] ?? ''));
+        if (($crime === '') !== ($sanction === '')) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'message' => 'Completa crimen y sanción para añadir el antecedente.']);
+            exit;
+        }
+
+        $item = rangers_update_criminal_status((string) $payload['id'], (string) $payload['status']);
+        rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: ACTUALIZÓ ESTADO DE ' . ($item['nombre'] ?? ''));
+        if ($crime !== '') {
+            $item = rangers_add_crime_to_criminal((string) $payload['id'], $crime, $sanction);
+            rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: AÑADIÓ CRIMEN A ' . ($item['nombre'] ?? ''));
+            rangers_notify_criminal_history_discord($item, $crime, $sanction, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
+        }
+
+        echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
     if ($action === 'add_crime') {
         if (empty($payload['id']) || empty($payload['delito'])) {
             http_response_code(422);

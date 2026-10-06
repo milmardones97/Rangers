@@ -622,7 +622,7 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 
         .status-form{
             display:grid;
-            grid-template-columns:1fr 180px;
+            grid-template-columns:1fr;
             gap:10px;
             margin-bottom:12px;
         }
@@ -800,7 +800,7 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 
                     <form class="status-form" id="statusForm" onsubmit="return false;">
                         <div class="field">
-                            <label for="statusSelect">Actualizar status</label>
+                            <label for="statusSelect">Status a guardar con el historial</label>
                             <select id="statusSelect" disabled>
                                 <option value="EN PRISION">EN PRISION</option>
                                 <option value="EN LIBERTAD">EN LIBERTAD</option>
@@ -808,10 +808,6 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
                                 <option value="MUERTO">MUERTO</option>
                                 <option value="EN BUSQUEDA">EN BUSQUEDA</option>
                             </select>
-                        </div>
-
-                        <div class="field">
-                            <button type="submit" class="btn" id="btnActualizarStatus" disabled>Actualizar status</button>
                         </div>
                     </form>
 
@@ -850,7 +846,7 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 <script>
 window.sispolCriminalesData = <?php echo json_encode($criminales, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/bd_criminales_db.js?v=<?php echo (int) filemtime(__DIR__ . '/../js/bd_criminales_db.js'); ?>"></script>
+<script src="../js/bd_criminales_db.js?v=20261006-2"></script>
 <script src="../loader_sispol.js"></script>
 </body>
 </html>

@@ -268,6 +268,12 @@ try { $agentesDb = rangers_fetch_user_control_records(); if ($agentesDb !== []) 
             outline:none;
             text-transform:uppercase;
         }
+        .user-form input:disabled, .user-form select:disabled{
+            color:rgba(215,238,99,.42);
+            border-color:rgba(163,214,63,.2);
+            background:rgba(0,0,0,.6);
+            cursor:not-allowed;
+        }
         .user-form{ margin-top:14px; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
         .user-form .full{ grid-column:1/-1; }
         .profile-preview{ width:64px; height:64px; object-fit:cover; border:1px solid var(--green); display:none; }
@@ -294,6 +300,8 @@ try { $agentesDb = rangers_fetch_user_control_records(); if ($agentesDb !== []) 
         .btn.alt:hover{ background:var(--amber); color:#000; }
         .btn.danger{ border-color:var(--red); color:var(--red); }
         .btn.danger:hover{ background:var(--red); color:#000; }
+        .btn:disabled{ opacity:.42; cursor:not-allowed; }
+        .btn:disabled:hover{ background:transparent; color:inherit; }
         .status-row{
             margin-top:12px;
             display:flex;
@@ -526,12 +534,12 @@ try { $agentesDb = rangers_fetch_user_control_records(); if ($agentesDb !== []) 
                         <button type="button" class="btn danger" id="btnDesactivar" disabled>Desactivar</button>
                     </div>
                     <form class="user-form" id="userForm">
-                        <div class="field full"><label for="formNombre">Nombre y apellido / usuario</label><input id="formNombre" required placeholder="NOMBRE_APELLIDO"></div>
-                        <div class="field"><label for="formRango">Rango</label><select id="formRango" required><?php foreach ($rankGroups as $group => $ranks): ?><optgroup label="<?php echo htmlspecialchars($group); ?>"><?php foreach ($ranks as $rank): ?><option value="<?php echo htmlspecialchars($rank); ?>"><?php echo htmlspecialchars($rank); ?></option><?php endforeach; ?></optgroup><?php endforeach; ?></select></div>
+                        <div class="field full"><label for="formNombre">Nombre y apellido / usuario</label><input id="formNombre" required disabled placeholder="NOMBRE_APELLIDO"></div>
+                        <div class="field"><label for="formRango">Rango</label><select id="formRango" required disabled><?php foreach ($rankGroups as $group => $ranks): ?><optgroup label="<?php echo htmlspecialchars($group); ?>"><?php foreach ($ranks as $rank): ?><option value="<?php echo htmlspecialchars($rank); ?>"><?php echo htmlspecialchars($rank); ?></option><?php endforeach; ?></optgroup><?php endforeach; ?></select></div>
                         <div class="field"><label for="formNivel">Nivel de permisos</label><select id="formNivel" disabled><option value="OFICIAL">OFICIAL</option><option value="SUPERVISOR">SUPERVISOR</option><option value="JEFATURA">JEFATURA</option></select></div>
-                        <div class="field"><label for="formPlaca">Número de placa</label><input id="formPlaca" required></div>
-                        <div class="field"><label for="formPassword">Nueva contraseña</label><input type="password" id="formPassword" placeholder="AUTOGENERADA AL CREAR"></div>
-                        <div class="field"><label for="formImagen">URL de foto de perfil</label><input type="url" id="formImagen" placeholder="https://i.imgur.com/imagen.jpg"></div>
+                        <div class="field"><label for="formPlaca">Número de placa</label><input id="formPlaca" required disabled></div>
+                        <div class="field"><label for="formPassword">Nueva contraseña</label><input type="password" id="formPassword" disabled placeholder="AUTOGENERADA AL CREAR"></div>
+                        <div class="field"><label for="formImagen">URL de foto de perfil</label><input type="url" id="formImagen" disabled placeholder="https://i.imgur.com/imagen.jpg"></div>
                         <div class="field full"><img id="profilePreview" class="profile-preview" alt="Vista previa de perfil"></div>
                     </form>
                 </div>

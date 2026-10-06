@@ -13,6 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     const updatePreview = () => { imageData = normalizeImageUrl(imageUrl.value); preview.src = imageData; preview.style.display = imageData ? 'block' : 'none'; };
     const setStatus = (text, type = '') => { status.textContent = text; status.className = 'status-text ' + type; };
+    const setFormMode = (mode = 'locked') => {
+        const editable = mode === 'create' || mode === 'edit';
+        [name, rank, badge, password, imageUrl].forEach(field => { field.disabled = !editable; });
+        level.disabled = true;
+        save.disabled = !editable;
+        disable.disabled = mode !== 'edit';
+    };
     const showToast = (text) => { toast.textContent = text; toast.classList.add('show'); clearTimeout(window.sispolToastTimer); window.sispolToastTimer = setTimeout(() => toast.classList.remove('show'), 3200); };
     const startSaving = () => {
         const frames = ['/--', '--\\'];
@@ -49,14 +56,14 @@ document.addEventListener('DOMContentLoaded', () => {
         byId('detailIngreso').textContent = agent.fecha_ingreso; byId('detailAcceso').textContent = agent.acceso + ' / ' + agent.nivel_permisos; byId('detailId').textContent = agent.username;
         byId('summary').style.display='grid'; byId('placeholder').style.display='none'; byId('passwordBox').style.display='grid'; byId('passwordValue').textContent='CLAVE PROTEGIDA';
         byId('accessChip').textContent = agent.activo ? 'ACTIVO' : 'DESACTIVADO'; byId('accessChip').className = 'access-chip ' + (agent.activo ? 'chip-ok' : 'chip-no');
-        save.disabled = false; disable.disabled = false; disable.textContent = agent.activo ? 'Desactivar' : 'Activar';
+        setFormMode('edit'); disable.textContent = agent.activo ? 'Desactivar' : 'Activar';
         renderLogs(agent.logs); render(); setStatus('Registro cargado: ' + agent.nombre, 'success');
     };
     const refresh = async () => { const result = await api(); agentes = result.data; render(); if (actual) { const updated = agentes.find(a => a.id === actual.id); if (updated) select(updated); } };
     const payload = () => ({agent_id: actual?.id || '', nombre:name.value, rango:rank.value, placa:badge.value, password:password.value, imagen:imageData});
     byId('btnBuscar').onclick = render; search.oninput = render;
     rank.onchange = updateLevel;
-    byId('btnNuevo').onclick = () => { actual=null; form.reset(); updateLevel(); imageData=''; preview.style.display='none'; save.disabled=false; disable.disabled=true; byId('summary').style.display='none'; byId('placeholder').style.display='flex'; byId('placeholder').textContent='Completa la ficha para crear un usuario.'; renderLogs([]); render(); };
+    byId('btnNuevo').onclick = () => { actual=null; form.reset(); updateLevel(); imageData=''; preview.style.display='none'; setFormMode('create'); byId('summary').style.display='none'; byId('placeholder').style.display='flex'; byId('placeholder').textContent='Completa la ficha para crear un usuario.'; renderLogs([]); render(); name.focus(); };
     save.onclick = async () => { startSaving(); save.disabled = true; try { const data = {...payload(), action: actual ? 'update' : 'create'}; const result = await api(data); const message = result.plain_password ? 'Usuario creado. Contraseña temporal: ' + result.plain_password : 'Registro guardado correctamente.'; setStatus(message, 'success'); actual = result.data; await refresh(); showToast(message); } catch (e) { setStatus(e.message, 'error'); showToast(e.message); } finally { stopSaving(); save.disabled = false; } };
     disable.onclick = async () => { if (!actual) return; try { await api({action:'set_active', agent_id:actual.id, active:!actual.activo}); setStatus(actual.activo ? 'Usuario desactivado.' : 'Usuario activado.', 'success'); await refresh(); } catch (e) { setStatus(e.message, 'error'); } };
     imageUrl.oninput = updatePreview;
@@ -64,5 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.boot-line').forEach((line, index) => {
         setTimeout(() => line.classList.add('show'), 90 + (index * 90));
     });
+    setFormMode();
     refresh().catch(error => setStatus(error.message, 'error'));
 });

@@ -130,6 +130,15 @@ try { $investigacionesDb = rangers_fetch_investigations(); if ($investigacionesD
     </style>
 </head>
 <body>
+<div id="pageLoader" class="page-loader">
+    <div class="page-loader-box">
+        <div class="page-loader-title">SISPOL V1</div>
+        <div class="page-loader-module" id="pageLoaderModule">CARGANDO MÓDULO...</div>
+        <div class="page-loader-progress"><div class="page-loader-progress-bar" id="pageLoaderBar"></div></div>
+        <div class="page-loader-status"><span id="pageLoaderSpinner">\--</span><span id="pageLoaderStatus">LEYENDO INVESTIGACIONES</span></div>
+        <div class="page-loader-dots"></div>
+    </div>
+</div>
 <div class="screen">
     <div class="container">
         <div class="top-bar">Investigaciones</div>

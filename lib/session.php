@@ -48,15 +48,34 @@ function rangers_session_gc(int $maxLifetime): int|false {
     return 0;
 }
 
+final class RangersFirebaseSessionHandler implements SessionHandlerInterface {
+    public function open(string $path, string $name): bool {
+        return true;
+    }
+
+    public function close(): bool {
+        return true;
+    }
+
+    public function read(string $id): string {
+        return rangers_session_read($id);
+    }
+
+    public function write(string $id, string $data): bool {
+        return rangers_session_write($id, $data);
+    }
+
+    public function destroy(string $id): bool {
+        return rangers_session_destroy($id);
+    }
+
+    public function gc(int $maxLifetime): int|false {
+        return rangers_session_gc($maxLifetime);
+    }
+}
+
 function rangers_enable_firebase_sessions(): void {
     if (session_status() !== PHP_SESSION_NONE) return;
 
-    session_set_save_handler([
-        'open' => static fn (string $path, string $name): bool => true,
-        'close' => static fn (): bool => true,
-        'read' => 'rangers_session_read',
-        'write' => 'rangers_session_write',
-        'destroy' => 'rangers_session_destroy',
-        'gc' => 'rangers_session_gc',
-    ], true);
+    session_set_save_handler(new RangersFirebaseSessionHandler(), true);
 }

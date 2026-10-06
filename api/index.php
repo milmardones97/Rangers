@@ -19,6 +19,8 @@ if (!is_file($target)) {
 $extension = strtolower(pathinfo($target, PATHINFO_EXTENSION));
 if ($extension === 'php') {
     chdir($root);
+    require_once $root . '/lib/session.php';
+    rangers_enable_firebase_sessions();
     require $target;
     exit;
 }

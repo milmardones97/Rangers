@@ -15,8 +15,8 @@ unset($_SESSION['login_error']);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rangers de Angel Pine</title>
-    <link rel="icon" type="image/png" href="logo.png">
-    <link rel="apple-touch-icon" href="logo.png">
+    <link rel="icon" type="image/png" href="Logo.png">
+    <link rel="apple-touch-icon" href="Logo.png">
     <link rel="stylesheet" href="style.css?v=<?php echo (int) filemtime(__DIR__ . '/style.css'); ?>">
 </head>
 <body>
@@ -25,7 +25,7 @@ unset($_SESSION['login_error']);
     <div class="wrapper">
 
 <div class="badge-area">
-    <img src="logo.png" alt="Logo Rangers" class="logo-img">
+    <img src="Logo.png" alt="Logo Rangers" class="logo-img">
 </div>
 
         <h1 class="title">SISTEMA DE CONTROL POLICIAL</h1>

@@ -10,6 +10,7 @@ if (!isset($_SESSION['usuario'])) {
 
 require_once __DIR__ . '/../lib/vehicles.php';
 require_once __DIR__ . '/../lib/users_admin.php';
+require_once __DIR__ . '/../lib/discord.php';
 require_once __DIR__ . '/../interno/access_control.php';
 
 try {
@@ -58,6 +59,7 @@ try {
         strtoupper($_SESSION['usuario'] ?? 'USUARIO')
     );
     rangers_log_sispol_activity((string)$_SESSION['usuario'], 'MULTAS TRÁNSITO: CREÓ ' . ($result['fine']['fine_code'] ?? 'REGISTRO'));
+    rangers_notify_traffic_fine_discord($result['fine'] ?? [], strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
 
     echo json_encode(['ok' => true, 'data' => $result], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 } catch (Throwable $exception) {

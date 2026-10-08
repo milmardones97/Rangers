@@ -51,4 +51,10 @@ document.addEventListener("DOMContentLoaded", () => {
             loader.classList.add("hide");
         }, 180);
     }, 950);
+
+    // Evita que una carga interrumpida deje todo el módulo cubierto.
+    setTimeout(() => {
+        loader.classList.add("hide");
+        loader.style.display = "none";
+    }, 1800);
 });

@@ -7,11 +7,20 @@
     justify-content: center;
     z-index: 99999;
     transition: opacity 0.25s ease;
+    animation: loaderFailsafe 0s linear 3s forwards;
 }
 
 .page-loader.hide{
     opacity: 0;
     pointer-events: none;
+}
+
+@keyframes loaderFailsafe{
+    to{
+        opacity:0;
+        visibility:hidden;
+        pointer-events:none;
+    }
 }
 
 .page-loader-box{

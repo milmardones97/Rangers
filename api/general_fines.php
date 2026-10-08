@@ -9,6 +9,7 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 require_once __DIR__ . '/../lib/fines.php';
+require_once __DIR__ . '/../lib/mysql_general_fines.php';
 require_once __DIR__ . '/../lib/users_admin.php';
 require_once __DIR__ . '/../lib/discord.php';
 require_once __DIR__ . '/../interno/access_control.php';
@@ -17,7 +18,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode([
             'ok' => true,
-            'data' => rangers_fetch_general_fines(),
+            'data' => rangers_combined_general_fines(),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -39,6 +40,27 @@ try {
     if (in_array($action, ['update','delete'], true) && !sispol_puede_gestionar_multas($_SESSION['rango'] ?? '')) {
         http_response_code(403);
         echo json_encode(['ok'=>false,'message'=>'Solo Supervisores o Jefatura pueden editar o eliminar multas.']);
+        exit;
+    }
+    if ($action === 'review_external') {
+        if (!sispol_puede_gestionar_multas($_SESSION['rango'] ?? '')) {
+            http_response_code(403);
+            echo json_encode(['ok'=>false,'message'=>'Solo Supervisores o Jefatura pueden revisar multas externas.']);
+            exit;
+        }
+        $item = rangers_review_external_general_fine(
+            (string) ($payload['external_multa_id'] ?? ''),
+            isset($_SESSION['user_id']) && $_SESSION['user_id'] !== null ? (int) $_SESSION['user_id'] : null,
+            strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO'))
+        );
+        if ($item === null) {
+            http_response_code(404);
+            echo json_encode(['ok'=>false,'message'=>'No se encontró la multa en la base externa.']);
+            exit;
+        }
+        rangers_log_sispol_activity((string) $_SESSION['usuario'], 'MULTAS GENERALES: REVISÓ MULTA EXTERNA ' . ($item['external_multa_id'] ?? ''));
+        rangers_notify_general_fine_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
+        echo json_encode(['ok'=>true,'data'=>$item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
     if ($action === 'update') {

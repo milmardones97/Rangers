@@ -330,6 +330,11 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
             font-size:13px;
             color:var(--green-soft);
         }
+        .fine-chip{display:inline-flex;width:max-content;padding:3px 7px;border:1px solid currentColor;font-weight:bold;font-size:12px;letter-spacing:.02em;}
+        .fine-chip.paid{color:var(--green);background:rgba(163,214,63,.12);}
+        .fine-chip.pending{color:#ffc95a;background:rgba(255,201,90,.08);}
+        .fine-chip.reviewed{color:#8fdcff;background:rgba(143,220,255,.08);}
+        .fine-chip.unreviewed{color:#ff8a8a;background:rgba(255,89,89,.1);}
 
         .summary-box{
             background:rgba(0,0,0,.58);
@@ -542,6 +547,7 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
 
                         <div class="form-actions">
                             <button type="button" class="btn" id="btnRegistrar">Crear multa nueva</button>
+                            <?php if ($puedeGestionarMultas): ?><button type="button" class="btn alt" id="btnRevisar" disabled>Marcar como revisada</button><?php endif; ?>
                             <button type="button" class="btn" id="btnLimpiar">Limpiar campos</button>
                             <?php if ($puedeGestionarMultas): ?><button type="button" class="btn danger" id="btnEliminar" disabled>Eliminar multa</button><?php endif; ?>
                         </div>

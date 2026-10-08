@@ -87,8 +87,8 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
 
         html, body{
             width:100%;
-            height:100%;
-            overflow:hidden;
+            min-height:100%;
+            overflow:auto;
         }
 
         body{
@@ -141,20 +141,25 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
             position:relative;
             z-index:2;
             width:100vw;
-            height:100vh;
+            min-height:100vh;
             padding:14px 18px 10px;
             display:flex;
             justify-content:center;
+            align-items:flex-start;
             background:radial-gradient(circle at center, rgba(25,25,25,.08) 0%, rgba(0,0,0,1) 74%);
         }
 
         .container{
             width:min(1380px, 100%);
-            height:100%;
+            min-height:calc(100vh - 24px);
             display:flex;
             flex-direction:column;
             gap:10px;
         }
+
+        /* Cada módulo conserva su altura natural. Sin esto, una ventana baja
+           hace que flex reduzca los paneles y sus campos terminen superpuestos. */
+        .container > *{ flex-shrink:0; }
 
         .top-bar{
             background:var(--green-strong);
@@ -214,8 +219,8 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
 
         .main-grid{
             align-items:stretch;
-            overflow:hidden;
-            flex:1 1 auto;
+            overflow:visible;
+            flex:0 0 auto;
             min-height:0;
             display:grid;
             grid-template-columns:minmax(0, 1.08fr) minmax(360px, .92fr);

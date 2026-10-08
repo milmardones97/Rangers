@@ -1,6 +1,11 @@
 <?php
 session_start();
 header('Content-Type: application/json; charset=UTF-8');
+// Las multas externas cambian fuera de SISPOL: nunca entregar una respuesta
+// antigua de navegador/CDN para que la lista siempre consulte MySQL.
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 if (!isset($_SESSION['usuario'])) {
     http_response_code(401);

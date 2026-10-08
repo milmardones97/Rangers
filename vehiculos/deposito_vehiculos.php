@@ -7,43 +7,9 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 $nombreUsuario = strtoupper(trim($_SESSION['usuario'] ?? 'USUARIO'));
-
-/* Datos de ejemplo solo para diseño */
-$resultados = [
-    [
-        'id' => 1,
-        'propietario' => 'JOHN MARSTON',
-        'matricula' => 'AP-2381',
-        'modelo' => 'DECLASSE PREMIER',
-        'multas_asociadas' => '3',
-        'fecha_ultimo_registro' => '2026-03-12T18:30',
-        'veces_deposito' => '2',
-        'estado' => 'Retenido',
-        'observaciones' => 'Vehículo retenido por control pendiente.'
-    ],
-    [
-        'id' => 2,
-        'propietario' => 'ARTHUR MORGAN',
-        'matricula' => 'BP-9914',
-        'modelo' => 'BUFFALO S',
-        'multas_asociadas' => '1',
-        'fecha_ultimo_registro' => '2026-03-10T09:15',
-        'veces_deposito' => '1',
-        'estado' => 'Confiscado',
-        'observaciones' => 'Incautado por investigación en curso.'
-    ],
-    [
-        'id' => 3,
-        'propietario' => 'DUTCH VAN DER LINDE',
-        'matricula' => 'CR-4402',
-        'modelo' => 'WASHINGTON',
-        'multas_asociadas' => '5',
-        'fecha_ultimo_registro' => '2026-03-08T22:05',
-        'veces_deposito' => '4',
-        'estado' => 'Embargado',
-        'observaciones' => 'Mantiene deudas y multas pendientes.'
-    ]
-];
+require_once __DIR__ . '/../lib/mysql_depot.php';
+$resultados = [];
+try { $resultados = rangers_combined_depot_rows(); } catch (Throwable $exception) {}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -603,9 +569,9 @@ $resultados = [
                                 <tr>
                                     <th style="width:15%;">Propietario</th>
                                     <th style="width:10%;">Matrícula</th>
-                                    <th style="width:16%;">Modelo</th>
-                                    <th style="width:10%;">Multas</th>
-                                    <th style="width:15%;">Fecha último registro</th>
+                                    <th style="width:14%;">Modelo</th>
+                                    <th style="width:14%;">Agente de ingreso</th>
+                                    <th style="width:15%;">Fecha de ingreso</th>
                                     <th style="width:10%;">Veces depósito</th>
                                     <th style="width:10%;">Estado</th>
                                     <th style="width:14%;">Observaciones</th>
@@ -615,12 +581,12 @@ $resultados = [
                                 <?php foreach ($resultados as $fila): ?>
                                     <tr
                                         class="fila-resultado"
-                                        data-id="<?php echo htmlspecialchars($fila['id']); ?>"
+                                        data-id="<?php echo htmlspecialchars($fila['external_history_id']); ?>"
                                         data-propietario="<?php echo htmlspecialchars($fila['propietario']); ?>"
                                         data-matricula="<?php echo htmlspecialchars($fila['matricula']); ?>"
                                         data-modelo="<?php echo htmlspecialchars($fila['modelo']); ?>"
-                                        data-multas="<?php echo htmlspecialchars($fila['multas_asociadas']); ?>"
-                                        data-fecha="<?php echo htmlspecialchars($fila['fecha_ultimo_registro']); ?>"
+                                        data-agente="<?php echo htmlspecialchars($fila['agente']); ?>"
+                                        data-fecha="<?php echo htmlspecialchars($fila['fecha']); ?>"
                                         data-veces="<?php echo htmlspecialchars($fila['veces_deposito']); ?>"
                                         data-estado="<?php echo htmlspecialchars($fila['estado']); ?>"
                                         data-observaciones="<?php echo htmlspecialchars($fila['observaciones']); ?>"
@@ -628,8 +594,8 @@ $resultados = [
                                         <td><?php echo htmlspecialchars($fila['propietario']); ?></td>
                                         <td><?php echo htmlspecialchars($fila['matricula']); ?></td>
                                         <td><?php echo htmlspecialchars($fila['modelo']); ?></td>
-                                        <td><?php echo htmlspecialchars($fila['multas_asociadas']); ?></td>
-                                        <td><?php echo htmlspecialchars($fila['fecha_ultimo_registro']); ?></td>
+                                        <td><?php echo htmlspecialchars($fila['agente']); ?></td>
+                                        <td><?php echo htmlspecialchars($fila['fecha']); ?></td>
                                         <td><?php echo htmlspecialchars($fila['veces_deposito']); ?></td>
                                         <td><?php echo htmlspecialchars($fila['estado']); ?></td>
                                         <td><?php echo htmlspecialchars($fila['observaciones']); ?></td>
@@ -655,47 +621,46 @@ $resultados = [
                         <div class="form-grid">
                             <div class="field">
                                 <label for="propietario">Propietario</label>
-                                <input type="text" id="propietario">
+                                <input type="text" id="propietario" readonly>
                             </div>
 
                             <div class="field">
                                 <label for="matricula">Matrícula</label>
-                                <input type="text" id="matricula">
+                                <input type="text" id="matricula" readonly>
                             </div>
 
                             <div class="field">
                                 <label for="modelo">Modelo</label>
-                                <input type="text" id="modelo">
+                                <input type="text" id="modelo" readonly>
                             </div>
 
                             <div class="field">
-                                <label for="multas_asociadas">Multas asociadas</label>
-                                <input type="text" id="multas_asociadas">
+                                <label for="agente_ingreso">Agente de ingreso</label>
+                                <input type="text" id="agente_ingreso" readonly>
                             </div>
 
                             <div class="field">
-                                <label for="fecha_ultimo_registro">Fecha de último registro</label>
-                                <input type="datetime-local" id="fecha_ultimo_registro">
+                                <label for="fecha_ultimo_registro">Fecha de ingreso</label>
+                                <input type="text" id="fecha_ultimo_registro" readonly>
                             </div>
 
                             <div class="field">
                                 <label for="veces_deposito">Veces en depósito</label>
-                                <input type="number" id="veces_deposito" min="0" value="0">
+                                <input type="number" id="veces_deposito" min="0" value="0" readonly>
                             </div>
 
                             <div class="field full">
                                 <label for="estado">Estado</label>
                                 <select id="estado">
-                                    <option value="">Seleccione</option>
-                                    <option value="Liberado">Liberado</option>
-                                    <option value="Confiscado">Confiscado</option>
-                                    <option value="Embargado">Embargado</option>
-                                    <option value="Retenido">Retenido</option>
+                                    <option value="RETENIDO">Retenido</option>
+                                    <option value="LIBERADO">Liberado</option>
+                                    <option value="CONFISCADO">Confiscado</option>
+                                    <option value="EMBARGADO">Embargado</option>
                                 </select>
                             </div>
 
                             <div class="field full">
-                                <label for="observaciones">Observaciones</label>
+                                <label for="observaciones">Observaciones del depósito</label>
                                 <textarea id="observaciones"></textarea>
                             </div>
                         </div>
@@ -722,7 +687,7 @@ $resultados = [
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const filas = document.querySelectorAll(".fila-resultado");
+    let registros = <?php echo json_encode($resultados, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
     const busqueda = document.getElementById("q");
     const tipo = document.getElementById("tipo");
     const btnBuscar = document.getElementById("btnBuscar");
@@ -734,86 +699,99 @@ document.addEventListener("DOMContentLoaded", () => {
     const propietario = document.getElementById("propietario");
     const matricula = document.getElementById("matricula");
     const modelo = document.getElementById("modelo");
-    const multas = document.getElementById("multas_asociadas");
+    const agenteIngreso = document.getElementById("agente_ingreso");
     const fecha = document.getElementById("fecha_ultimo_registro");
     const veces = document.getElementById("veces_deposito");
     const estado = document.getElementById("estado");
     const observaciones = document.getElementById("observaciones");
     const btnNuevo = document.getElementById("btnNuevo");
     const btnGuardar = document.getElementById("btnGuardar");
+    const formTitle = document.getElementById("formTitle");
 
-    function limpiarSeleccion() {
-        filas.forEach(f => f.classList.remove("selected"));
+    const tablaBody = document.getElementById("tablaBody");
+    const normalizar = (value) => (value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+
+    function renderTabla(lista) {
+        tablaBody.innerHTML = "";
+        lista.forEach((item) => {
+            const fila = document.createElement("tr");
+            fila.className = "fila-resultado";
+            fila.innerHTML = `<td>${item.propietario}</td><td>${item.matricula}</td><td>${item.modelo}</td><td>${item.agente}</td><td>${item.fecha || "SIN FECHA"}</td><td>${item.veces_deposito}</td><td>${item.estado}</td><td>${item.observaciones || item.motivo || "SIN OBSERVACIONES"}</td>`;
+            fila.addEventListener("click", () => cargarRegistro(item, fila));
+            tablaBody.appendChild(fila);
+        });
+        searchStatus.textContent = `${lista.length} INGRESO(S) ACTIVO(S) EN DEPÓSITO.`;
     }
+
+    function limpiarSeleccion() { tablaBody.querySelectorAll("tr").forEach(f => f.classList.remove("selected")); }
 
     function limpiarFormulario() {
         registroId.value = "";
         propietario.value = "";
         matricula.value = "";
         modelo.value = "";
-        multas.value = "";
+        agenteIngreso.value = "";
         fecha.value = "";
         veces.value = "0";
-        estado.value = "";
+        estado.value = "RETENIDO";
         observaciones.value = "";
         limpiarSeleccion();
     }
 
-    function cargarFila(fila) {
+    function cargarRegistro(item, fila) {
         limpiarSeleccion();
         fila.classList.add("selected");
 
-        registroId.value = fila.dataset.id || "";
-        propietario.value = fila.dataset.propietario || "";
-        matricula.value = fila.dataset.matricula || "";
-        modelo.value = fila.dataset.modelo || "";
-        multas.value = fila.dataset.multas || "";
-        fecha.value = fila.dataset.fecha || "";
-        veces.value = fila.dataset.veces || "0";
-        estado.value = fila.dataset.estado || "";
-        observaciones.value = fila.dataset.observaciones || "";
+        registroId.value = item.external_history_id || "";
+        propietario.value = item.propietario || "";
+        matricula.value = item.matricula || "";
+        modelo.value = item.modelo || "";
+        agenteIngreso.value = item.agente || "";
+        fecha.value = item.fecha || "";
+        veces.value = item.veces_deposito || "0";
+        estado.value = item.estado || "RETENIDO";
+        observaciones.value = item.observaciones || item.motivo || "";
+        formTitle.textContent = `Información · ${item.id}`;
     }
-
-    filas.forEach(fila => {
-        fila.addEventListener("click", () => {
-            cargarFila(fila);
-        });
-    });
 
     btnNuevo.addEventListener("click", () => {
         limpiarFormulario();
-        propietario.focus();
+        estado.focus();
     });
 
-    btnGuardar.addEventListener("click", () => {
-        if (propietario.value.trim() === "" || matricula.value.trim() === "") {
-            alert("Debes completar al menos Propietario y Matrícula.");
-            return;
-        }
-
-        if (registroId.value) {
-            alert("Aquí luego puedes guardar los cambios del registro ID " + registroId.value + " en la base de datos.");
-        } else {
-            alert("Aquí luego puedes crear un nuevo registro en la base de datos.");
-        }
+    btnGuardar.addEventListener("click", async () => {
+        if (!registroId.value) { searchStatus.textContent = "SELECCIONA UN INGRESO PARA EDITAR SU ESTADO."; searchStatus.className = "status-line error"; return; }
+        btnGuardar.disabled = true;
+        searchStatus.textContent = "GUARDANDO ESTADO EN SISPOL...";
+        try {
+            const response = await fetch("../api/vehicle_depot.php", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({action:"update_status", external_history_id:registroId.value, estado:estado.value, observaciones:observaciones.value})});
+            const result = await response.json();
+            if (!response.ok || !result.ok) throw new Error(result.message || "No se pudo guardar el estado.");
+            await refrescar();
+            searchStatus.textContent = "ESTADO GUARDADO EN FIREBASE. LA CONSULTA SQL NO FUE MODIFICADA.";
+            searchStatus.className = "status-line success";
+        } catch (error) { searchStatus.textContent = error.message; searchStatus.className = "status-line error"; }
+        finally { btnGuardar.disabled = false; }
     });
 
     btnBuscar.addEventListener("click", () => {
         const texto = busqueda.value.trim().toLowerCase();
         const campo = tipo.value;
 
-        filas.forEach(fila => {
-            let valor = "";
-
-            if (campo === "propietario") {
-                valor = (fila.dataset.propietario || "").toLowerCase();
-            } else {
-                valor = (fila.dataset.matricula || "").toLowerCase();
-            }
-
-            fila.style.display = valor.includes(texto) ? "" : "none";
-        });
+        const filtrados = registros.filter((item) => normalizar(campo === "propietario" ? item.propietario : item.matricula).includes(normalizar(texto)));
+        renderTabla(filtrados);
     });
+
+    async function refrescar() {
+        const response = await fetch("../api/vehicle_depot.php", {headers:{"Accept":"application/json"}, cache:"no-store"});
+        const result = await response.json();
+        if (!response.ok || !result.ok) throw new Error(result.message || "No se pudo cargar el depósito.");
+        registros = result.data;
+        renderTabla(registros);
+    }
+
+    renderTabla(registros);
+    refrescar().catch((error) => { searchStatus.textContent = error.message; searchStatus.className = "status-line error"; });
 });
 </script>
 

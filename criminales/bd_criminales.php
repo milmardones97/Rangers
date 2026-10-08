@@ -173,9 +173,9 @@ $criminales = [];
         }
 
         .boot-line{
-            opacity:0;
-            transform:translateY(10px);
-            filter:blur(2px);
+            opacity:1;
+            transform:none;
+            filter:none;
         }
 
         .boot-line.show{

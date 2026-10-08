@@ -732,7 +732,7 @@ $criminales = [];
                                 <label for="createNombre">Nombre</label>
                                 <input type="text" id="createNombre">
                             </div>
-                            <div class="field">
+                            <div class="field" style="display:none;">
                                 <label for="createCharacterId">Character ID</label>
                                 <input type="text" id="createCharacterId" readonly>
                             </div>

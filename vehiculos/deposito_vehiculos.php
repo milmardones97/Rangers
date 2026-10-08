@@ -669,7 +669,6 @@ try { $resultados = rangers_combined_depot_rows(); } catch (Throwable $exception
 
                         <div class="form-actions">
                             <button type="button" class="btn" id="btnGuardar">Guardar cambios</button>
-                            <button type="button" class="btn" id="btnNuevo">Nuevo</button>
                             <a href="../panel.php" class="btn">Volver</a>
                         </div>
                     </form>
@@ -706,7 +705,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const veces = document.getElementById("veces_deposito");
     const estado = document.getElementById("estado");
     const observaciones = document.getElementById("observaciones");
-    const btnNuevo = document.getElementById("btnNuevo");
     const btnGuardar = document.getElementById("btnGuardar");
     const formTitle = document.getElementById("formTitle");
     const saveToast = document.getElementById("saveToast");
@@ -773,11 +771,6 @@ document.addEventListener("DOMContentLoaded", () => {
         observaciones.value = item.observaciones || item.motivo || "";
         formTitle.textContent = `Información · ${item.id}`;
     }
-
-    btnNuevo.addEventListener("click", () => {
-        limpiarFormulario();
-        estado.focus();
-    });
 
     btnGuardar.addEventListener("click", async () => {
         if (!registroId.value) { searchStatus.textContent = "SELECCIONA UN INGRESO PARA EDITAR SU ESTADO."; searchStatus.className = "status-line error"; return; }

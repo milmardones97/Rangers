@@ -7,7 +7,7 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 $nombreUsuario = strtoupper(trim($_SESSION['usuario'] ?? 'USUARIO'));
-require_once __DIR__ . '/../lib/vehicles.php';
+require_once __DIR__ . '/../lib/mysql_vehicle_database.php';
 
 $vehiculos = [
     [
@@ -52,7 +52,7 @@ $vehiculos = [
     ]
 ];
 
-try { $vehiculosDb = rangers_fetch_vehicles(); if ($vehiculosDb !== []) $vehiculos = $vehiculosDb; } catch (Throwable $exception) {}
+try { $vehiculosDb = rangers_combined_vehicle_database_records(); if ($vehiculosDb !== []) $vehiculos = $vehiculosDb; } catch (Throwable $exception) {}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -727,6 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnLimpiar = document.getElementById("btnLimpiar");
     let scanTimer = null;
     let savingTimer = null;
+    let externoSeleccionado = false;
 
     function setSearchStatus(texto, tipo) {
         searchStatus.textContent = texto;
@@ -788,7 +789,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function marcarEscaneados(idsEscaneados, idActual, idEncontrado) {
         Array.from(tablaBody.querySelectorAll("tr")).forEach((fila) => {
-            const idFila = Number(fila.dataset.id);
+            const idFila = String(fila.dataset.id);
             fila.classList.remove("scanning", "match", "dim");
 
             if (idEncontrado !== null) {
@@ -837,6 +838,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         registroId.value = "";
+        externoSeleccionado = false;
         propietario.value = "";
         modelo.value = "";
         matricula.value = "";
@@ -844,6 +846,8 @@ document.addEventListener("DOMContentLoaded", () => {
         descripcion.value = "";
         multas.value = "";
         status.value = "SIN EMBARGO";
+        [propietario, modelo, matricula, color, multas, status].forEach((field) => field.disabled = false);
+        descripcion.disabled = false;
         limpiarSeleccion();
         actualizarResumen(null);
         setFormStatus("Formulario listo para registrar un vehiculo nuevo.", "");
@@ -854,6 +858,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!item) return;
 
         registroId.value = item.id;
+        externoSeleccionado = Boolean(item.external_vehicle_id);
         propietario.value = item.propietario;
         modelo.value = item.modelo;
         matricula.value = item.matricula;
@@ -861,8 +866,10 @@ document.addEventListener("DOMContentLoaded", () => {
         descripcion.value = item.descripcion;
         multas.value = item.multas;
         status.value = item.status;
+        [propietario, modelo, matricula, color, multas, status].forEach((field) => field.disabled = externoSeleccionado);
+        descripcion.disabled = false;
         actualizarResumen(item);
-        setFormStatus("Vehiculo cargado. Puedes anadir nuevos datos al registro existente.", "success");
+        setFormStatus(externoSeleccionado ? "Vehículo externo cargado. Puedes añadir una descripción al registro." : "Vehiculo cargado. Puedes anadir nuevos datos al registro existente.", "success");
     }
 
     function renderTabla(lista) {
@@ -918,9 +925,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return orden;
     }
 
-    async function refrescarRegistros() {
+    async function refrescarRegistros(query = "", field = "matricula") {
         try {
-            const response = await fetch("../api/vehicles.php", { headers: { "Accept": "application/json" } });
+            const params = query ? `?q=${encodeURIComponent(query)}&field=${encodeURIComponent(field)}` : "";
+            const response = await fetch("../api/vehicles.php" + params, { headers: { "Accept": "application/json" } });
             const result = await response.json();
             if (response.ok && result.ok) {
                 registros = result.data;
@@ -929,7 +937,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function buscar() {
+    async function buscar() {
         const texto = normalizar(q.value);
         const campo = tipoBusqueda.value;
 
@@ -939,30 +947,32 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (!texto) {
+            await refrescarRegistros();
             renderTabla(registros);
             resetScanVisuals();
             setSearchStatus(`Mostrando todos los registros: ${registros.length}`, "");
             return;
         }
 
-        const resultados = registros.filter((item) => {
-            const valor = campo === "matricula" ? item.matricula : item.propietario;
-            return normalizar(valor).includes(texto);
-        });
+        setSearchStatus("Consultando vehículos registrados...", "");
+        btnBuscar.disabled = true;
+        await refrescarRegistros(q.value.trim(), campo);
+        btnBuscar.disabled = false;
+        const resultados = [...registros];
 
         const encontrado = resultados[0] || null;
-        const secuencia = prepararSecuencia(encontrado, registros);
+        const secuencia = prepararSecuencia(encontrado, resultados);
         const idsEscaneados = new Set();
         let indice = 0;
 
-        renderTabla(registros);
+        renderTabla(resultados);
         resetScanVisuals();
         setSearchStatus("Escaneando registros en la base central...", "");
         pulseFlash();
 
         scanTimer = setInterval(() => {
             const actual = secuencia[indice];
-            const filaActual = tablaBody.querySelector(`tr[data-id="${actual.id}"]`);
+            const filaActual = tablaBody.querySelector(`tr[data-id="${CSS.escape(String(actual.id))}"]`);
 
             marcarEscaneados(idsEscaneados, actual.id, null);
 
@@ -974,13 +984,13 @@ document.addEventListener("DOMContentLoaded", () => {
             pulseFlash();
 
             const esUltimoPaso = indice === secuencia.length - 1;
-            const coincide = encontrado && actual.id === encontrado.id;
+            const coincide = encontrado && String(actual.id) === String(encontrado.id);
 
             if (coincide) {
                 clearInterval(scanTimer);
                 scanTimer = null;
                 renderTabla(resultados);
-                const filaEncontrada = tablaBody.querySelector(`tr[data-id="${encontrado.id}"]`);
+                const filaEncontrada = tablaBody.querySelector(`tr[data-id="${CSS.escape(String(encontrado.id))}"]`);
                 if (filaEncontrada) {
                     filaEncontrada.classList.add("selected", "match");
                 }
@@ -1027,6 +1037,9 @@ document.addEventListener("DOMContentLoaded", () => {
             descripcion: descripcion.value.trim().toUpperCase(),
             status: status.value,
         };
+        if (action === "add_external_description") {
+            payload.external_vehicle_id = (registros.find((item) => String(item.id) === String(registroId.value)) || {}).external_vehicle_id || "";
+        }
 
         const response = await fetch("../api/vehicles.php", {
             method: "POST",
@@ -1054,22 +1067,30 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (!validarFormulario()) return;
+        if (externoSeleccionado) {
+            if (!descripcion.value.trim()) {
+                setFormStatus("Añade una descripción antes de guardar el registro externo.", "error");
+                return;
+            }
+        } else if (!validarFormulario()) return;
 
         iniciarGuardado();
         try {
-            const result = await enviarVehiculo("update");
+            const result = await enviarVehiculo(externoSeleccionado ? "add_external_description" : "update");
             if (!result.ok) {
                 setFormStatus(result.message || "No se pudo actualizar el vehiculo.", "error");
                 return;
             }
 
             await refrescarRegistros();
+            if (externoSeleccionado && !registros.some((item) => String(item.id) === String(result.data.id))) {
+                registros.unshift(result.data);
+            }
             renderTabla(registros);
             cargarRegistro(result.data.id);
             const fila = tablaBody.querySelector(`tr[data-id="${result.data.id}"]`);
             if (fila) fila.classList.add("selected");
-            setFormStatus(`Registro existente actualizado: ${result.data.matricula}`, "success");
+            setFormStatus(externoSeleccionado ? `Descripción añadida a ${result.data.matricula}.` : `Registro existente actualizado: ${result.data.matricula}`, "success");
         } catch (error) {
             setFormStatus("Error de conexion con la base de datos.", "error");
         } finally {

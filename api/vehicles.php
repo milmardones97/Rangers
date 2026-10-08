@@ -9,13 +9,16 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 require_once __DIR__ . '/../lib/vehicles.php';
+require_once __DIR__ . '/../lib/mysql_vehicle_database.php';
 require_once __DIR__ . '/../lib/users_admin.php';
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode([
             'ok' => true,
-            'data' => rangers_fetch_vehicles(),
+            'data' => !empty($_GET['q'])
+                ? rangers_search_external_vehicles((string) $_GET['q'], (string) ($_GET['field'] ?? 'matricula'))
+                : rangers_combined_vehicle_database_records(),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -34,6 +37,18 @@ try {
     }
 
     $action = $payload['action'] ?? '';
+
+    if ($action === 'add_external_description') {
+        $item = rangers_save_external_vehicle_description((string) ($payload['external_vehicle_id'] ?? ''), (string) ($payload['descripcion'] ?? ''), (string) $_SESSION['usuario']);
+        if ($item === null) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'message' => 'Selecciona un vehículo externo y añade una descripción.']);
+            exit;
+        }
+        rangers_log_sispol_activity((string) $_SESSION['usuario'], 'VEHÍCULOS: AÑADIÓ DESCRIPCIÓN A ' . ($item['matricula'] ?? 'REGISTRO'));
+        echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
 
     if ($action === 'create') {
         $item = rangers_create_vehicle($payload);

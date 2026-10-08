@@ -11,6 +11,7 @@ function rangers_external_depot_rows(): array
         dh.fecha AS fecha,
         dh.vehid AS vehiculoID,
         v.owner AS ownerID,
+        v.r1, v.g1, v.b1, v.r2, v.g2, v.b2,
         propietario.characterName AS propietario,
         dh.matricula,
         dh.modelo,

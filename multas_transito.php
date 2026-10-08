@@ -10,6 +10,7 @@ $nombreUsuario = strtoupper(trim($_SESSION['usuario'] ?? 'USUARIO'));
 require_once __DIR__ . '/interno/access_control.php';
 $puedeGestionarMultas = sispol_puede_gestionar_multas($_SESSION['rango'] ?? '');
 require_once __DIR__ . '/lib/vehicles.php';
+require_once __DIR__ . '/lib/mysql_traffic_fines.php';
 
 
 $multasMock = [
@@ -42,7 +43,7 @@ $multasMock = [
     ]
 ];
 
-try { $multasDb = rangers_fetch_traffic_fines(); if ($multasDb !== []) $multasMock = $multasDb; } catch (Throwable $exception) {}
+try { $multasDb = rangers_combined_traffic_fines(); if ($multasDb !== []) $multasMock = $multasDb; } catch (Throwable $exception) {}
 
 ?>
 <!DOCTYPE html>
@@ -593,6 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let searchTimer = null;
     let savingTimer = null;
     let multaEnEdicion = null;
+    let multaExternaSeleccionada = false;
 
     function normalizar(valor) {
         return String(valor || "")
@@ -650,7 +652,10 @@ document.addEventListener("DOMContentLoaded", () => {
         valor.value = "";
         observaciones.value = "";
         multaEnEdicion = null;
+        multaExternaSeleccionada = false;
+        [modelo, color, matricula, falta, valor, observaciones].forEach((field) => field.disabled = false);
         btnRegistrar.textContent = "Crear multa nueva";
+        btnRegistrar.disabled = false;
         if (btnEliminar) btnEliminar.disabled = true;
         setFormStatus("Formulario listo para registrar una nueva multa.", "");
     }
@@ -678,9 +683,9 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div style="grid-column:1 / -1;">ID: ${item.id}</div>
                 </div>
             `;
-            if (puedeGestionarMultas && item.storage_id) {
+            if (item.storage_id || item.external_multa_id) {
                 li.style.cursor = "pointer";
-                li.title = "Selecciona para editar esta multa";
+                li.title = item.external_multa_id ? "Ver datos de esta multa" : "Selecciona para editar esta multa";
                 li.addEventListener("click", () => cargarMultaParaEditar(item));
             }
             fineList.appendChild(li);
@@ -690,16 +695,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function cargarMultaParaEditar(item) {
-        multaEnEdicion = item;
+        multaEnEdicion = item.storage_id ? item : null;
+        multaExternaSeleccionada = Boolean(item.external_multa_id);
         modelo.value = item.modelo || "";
         color.value = item.color || "";
         matricula.value = item.matricula || "";
         falta.value = item.falta || "";
         valor.value = item.valor || "";
         observaciones.value = item.observaciones || "";
-        btnRegistrar.textContent = "Guardar cambios";
-        if (btnEliminar) btnEliminar.disabled = false;
-        setFormStatus("Editando multa " + item.id + ".", "success");
+        [modelo, color, matricula, falta, valor, observaciones].forEach((field) => field.disabled = multaExternaSeleccionada);
+        btnRegistrar.textContent = multaExternaSeleccionada ? "Registro externo" : "Guardar cambios";
+        btnRegistrar.disabled = multaExternaSeleccionada;
+        if (btnEliminar) btnEliminar.disabled = multaExternaSeleccionada || !multaEnEdicion;
+        setFormStatus(multaExternaSeleccionada ? "Datos cargados desde el registro de tránsito." : "Editando multa " + item.id + ".", "success");
     }
 
     async function refrescarMultas() {
@@ -792,7 +800,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             limpiarFormulario();
             setFormStatus(estabaEditando ? "Multa actualizada correctamente." : `Multa creada para la matricula ${result.data.fine.matricula}.`, "success");
-            setSearchStatus("Registro guardado en Firebase y sincronizado con vehículos.", "success");
+            setSearchStatus("Registro guardado correctamente.", "success");
         } catch (error) {
             setFormStatus("Error de conexion con la base de datos.", "error");
         } finally {

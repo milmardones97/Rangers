@@ -2,14 +2,7 @@
 
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/mysql_general_fines.php';
-
-function rangers_vehicle_model_name(string $model): string
-{
-    static $models;
-    $models ??= require __DIR__ . '/../config/vehicle_models.php';
-    $value = strtoupper(trim($model));
-    return $models[$value] ?? $value;
-}
+require_once __DIR__ . '/vehicle_models.php';
 
 function rangers_external_depot_rows(): array
 {

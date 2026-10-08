@@ -9,7 +9,7 @@ if (!isset($_SESSION['usuario'])) {
 $nombreUsuario = strtoupper(trim($_SESSION['usuario'] ?? 'USUARIO'));
 require_once __DIR__ . '/interno/access_control.php';
 $puedeGestionarMultas = sispol_puede_gestionar_multas($_SESSION['rango'] ?? '');
-require_once __DIR__ . '/lib/fines.php';
+require_once __DIR__ . '/lib/mysql_general_fines.php';
 
 $multasMock = [
     [
@@ -38,7 +38,7 @@ $multasMock = [
     ]
 ];
 
-try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMock = $multasDb; } catch (Throwable $exception) {}
+try { $multasDb = rangers_combined_general_fines(); if ($multasDb !== []) $multasMock = $multasDb; } catch (Throwable $exception) {}
 ?>
 <!DOCTYPE html>
 <html lang="es">

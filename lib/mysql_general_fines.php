@@ -2,6 +2,18 @@
 
 require_once __DIR__ . '/fines.php';
 
+function rangers_normalize_external_text(string $value): string
+{
+    $normalized = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $value);
+    return strtoupper($normalized === false ? $value : $normalized);
+}
+
+function rangers_is_traffic_fine_reason(string $reason): bool
+{
+    $normalized = rangers_normalize_external_text($reason);
+    return preg_match('/\[\s*TRANSITO\s*\]/', $normalized) === 1;
+}
+
 function rangers_mysql_general_fines_connection(): PDO
 {
     $host = trim((string) getenv('MYSQL_FINE_HOST'));
@@ -69,7 +81,8 @@ function rangers_external_general_fine_view(array $fine): array
 function rangers_external_general_fine_by_id(string $fineId): ?array
 {
     $rows = rangers_external_general_fines($fineId);
-    return $rows === [] ? null : $rows[0];
+    if ($rows === [] || rangers_is_traffic_fine_reason((string) ($rows[0]['razon'] ?? ''))) return null;
+    return $rows[0];
 }
 
 function rangers_reviewed_external_fines(): array
@@ -84,7 +97,10 @@ function rangers_reviewed_external_fines(): array
 
 function rangers_combined_general_fines(): array
 {
-    $externalRows = rangers_external_general_fines();
+    $externalRows = array_values(array_filter(
+        rangers_external_general_fines(),
+        fn(array $row): bool => !rangers_is_traffic_fine_reason((string) ($row['razon'] ?? ''))
+    ));
     $reviewed = rangers_reviewed_external_fines();
 
     foreach ($externalRows as $row) {
@@ -97,7 +113,10 @@ function rangers_combined_general_fines(): array
         }
     }
 
-    $items = rangers_fetch_general_fines();
+    $items = array_values(array_filter(
+        rangers_fetch_general_fines(),
+        fn(array $item): bool => !rangers_is_traffic_fine_reason((string) ($item['razon'] ?? ''))
+    ));
     $existing = [];
     foreach ($items as &$item) {
         $externalId = trim((string) ($item['external_multa_id'] ?? ''));

@@ -9,6 +9,7 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 require_once __DIR__ . '/../lib/vehicles.php';
+require_once __DIR__ . '/../lib/mysql_traffic_fines.php';
 require_once __DIR__ . '/../lib/users_admin.php';
 require_once __DIR__ . '/../lib/discord.php';
 require_once __DIR__ . '/../interno/access_control.php';
@@ -17,7 +18,7 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         echo json_encode([
             'ok' => true,
-            'data' => rangers_fetch_traffic_fines(),
+            'data' => rangers_combined_traffic_fines(),
         ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }

@@ -591,9 +591,14 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 
         .crime-form{
             display:grid;
-            grid-template-columns:1fr 180px;
+            grid-template-columns:1fr 1fr;
             gap:10px;
         }
+
+        .crime-form .full{ grid-column:1 / -1; }
+        .severity-options{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; min-height:42px; color:var(--green-soft); font-weight:bold; }
+        .severity-options label{ display:flex; align-items:center; gap:6px; color:var(--green-soft); cursor:pointer; }
+        .severity-options input{ width:17px; height:17px; accent-color:var(--green-strong); }
 
         .status-form{
             display:grid;
@@ -720,9 +725,10 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
                     <div class="profile-summary" id="profileSummary" style="display:none;">
                         <div class="profile-photo-slot" id="perfilFoto" aria-label="Foto de perfil criminal"></div>
                         <div class="profile-line"><span class="profile-label">Nombre:</span><span class="profile-value" id="perfilNombre">-</span></div>
-                        <div class="profile-line"><span class="profile-label">Character ID:</span><span class="profile-value" id="perfilCharacterId">-</span></div>
+                        <div class="profile-line"><span class="profile-label" id="perfilIdentityLabel">Character ID:</span><span class="profile-value" id="perfilCharacterId">-</span></div>
                         <div class="profile-line"><span class="profile-label">DNI:</span><span class="profile-value" id="perfilDni">-</span></div>
-                        <div class="profile-line"><span class="profile-label">Edad:</span><span class="profile-value" id="perfilEdad">-</span></div>
+                        <div class="profile-line"><span class="profile-label">Fecha de nacimiento:</span><span class="profile-value" id="perfilFechaNacimiento">-</span></div>
+                        <div class="profile-line"><span class="profile-label">Alias / Apodo:</span><span class="profile-value" id="perfilAlias">-</span></div>
                         <div class="profile-line"><span class="profile-label">Nacionalidad:</span><span class="profile-value" id="perfilNacionalidad">-</span></div>
                         <div class="profile-line"><span class="profile-label">Status:</span><span class="profile-value" id="perfilStatus">-</span></div>
                         <div class="profile-line"><span class="profile-label">Multas:</span><span class="profile-value" id="perfilMultas">0</span></div>
@@ -747,12 +753,8 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
                                 <input type="text" id="createCharacterId" readonly>
                             </div>
                             <div class="field">
-                                <label for="createDni">DNI</label>
-                                <input type="text" id="createDni">
-                            </div>
-                            <div class="field">
-                                <label for="createEdad">Edad</label>
-                                <input type="number" id="createEdad" min="0">
+                                <label for="createFechaNacimiento">Fecha de nacimiento</label>
+                                <input type="date" id="createFechaNacimiento">
                             </div>
                             <div class="field">
                                 <label for="createFoto">Foto de perfil (URL de Imgur o similar)</label>
@@ -761,6 +763,10 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
                             <div class="field">
                                 <label for="createNacionalidad">Nacionalidad</label>
                                 <input type="text" id="createNacionalidad">
+                            </div>
+                            <div class="field">
+                                <label for="createAlias">Alias / Apodo (opcional)</label>
+                                <input type="text" id="createAlias">
                             </div>
                             <div class="field" style="grid-column:1 / -1;">
                                 <label for="createStatus">Status</label>
@@ -805,16 +811,29 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 
                     <form class="crime-form" id="crimeForm" onsubmit="return false;">
                         <div class="field">
-                            <label for="nuevoCrimen">A&ntilde;adir crimen</label>
-                            <input type="text" id="nuevoCrimen" placeholder="Nuevo crimen..." disabled>
+                            <label for="ubicacionCrimen">Ubicaci&oacute;n</label>
+                            <input type="text" id="ubicacionCrimen" placeholder="Ubicación del hecho..." disabled>
                         </div>
-
                         <div class="field">
-                            <label for="nuevaSancion">Sanci&oacute;n</label>
-                            <input type="text" id="nuevaSancion" placeholder="Sanci&oacute;n aplicada..." disabled>
+                            <label for="agentesCrimen">Agente(s)</label>
+                            <input type="text" id="agentesCrimen" placeholder="Agentes intervinientes..." disabled>
                         </div>
-
                         <div class="field">
+                            <label for="nuevoCrimen">Delitos</label>
+                            <input type="text" id="nuevoCrimen" placeholder="Delito registrado..." disabled>
+                        </div>
+                        <div class="field">
+                            <label for="nuevaSancion">Sentencia</label>
+                            <input type="text" id="nuevaSancion" placeholder="Sentencia aplicada..." disabled>
+                        </div>
+                        <div class="field full">
+                            <label>Gravedad</label>
+                            <div class="severity-options">
+                                <label><input type="radio" name="gravedadCrimen" value="DELITO GRAVE (FELONY)" disabled> Delito grave (Felony)</label>
+                                <label><input type="radio" name="gravedadCrimen" value="DELITO MENOR (MISDEMEANOR)" disabled> Delito menor (Misdemeanor)</label>
+                            </div>
+                        </div>
+                        <div class="field full">
                             <button type="submit" class="btn" id="btnAgregarCrimen" disabled>A&ntilde;adir a la lista</button>
                         </div>
                     </form>

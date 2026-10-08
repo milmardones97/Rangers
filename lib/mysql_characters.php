@@ -15,3 +15,12 @@ function rangers_search_mysql_characters(string $query, string $field = 'nombre'
     $statement->execute(['query' => '%' . $query . '%']);
     return $statement->fetchAll();
 }
+
+function rangers_mysql_character_fine_count(string $characterId): int
+{
+    $characterId = trim($characterId);
+    if ($characterId === '') return 0;
+    $statement = rangers_mysql_general_fines_connection()->prepare('SELECT COUNT(*) FROM multas WHERE characterID = :character_id');
+    $statement->execute(['character_id' => $characterId]);
+    return (int) $statement->fetchColumn();
+}

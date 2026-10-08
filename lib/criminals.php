@@ -34,20 +34,21 @@ function rangers_fetch_criminals(): array
         $crimes = array_values(rangers_firebase_get('criminal_crimes/' . $id));
         $name = strtoupper($criminal['full_name'] ?? '');
         $references = rangers_criminal_sispol_references($name);
-        $out[] = ['id'=>(string)$id, 'character_id'=>(string)($criminal['character_id'] ?? ''), 'nombre'=>$name, 'dni'=>strtoupper($criminal['dni'] ?? ''), 'edad'=>$criminal['age'] ?? null,
+        $out[] = ['id'=>(string)$id, 'character_id'=>(string)($criminal['character_id'] ?? ''), 'nombre'=>$name, 'dni'=>strtoupper($criminal['dni'] ?? ''), 'fecha_nacimiento'=>(string)($criminal['birth_date'] ?? ''), 'alias'=>strtoupper($criminal['alias'] ?? ''), 'edad'=>$criminal['age'] ?? null,
             'foto'=>rangers_criminal_image_url((string)($criminal['profile_image'] ?? '')), 'nacionalidad'=>strtoupper($criminal['nationality'] ?? ''),
             'status'=>strtoupper($criminal['status'] ?? 'EN LIBERTAD'),
             'multas_count'=>count(array_filter($fines, fn($fine) => strtoupper($fine['person_name'] ?? '') === $name)), 'crimenes_count'=>count($crimes),
             'adn'=>!empty($criminal['dna']), 'huella_dactilar'=>!empty($criminal['fingerprint']), 'referencias'=>$references,
-            'crimenes'=>array_map(fn($crime) => ['delito'=>strtoupper($crime['crime_name'] ?? ''), 'sancion'=>strtoupper($crime['sanction'] ?? '')], $crimes)];
+            'crimenes'=>array_map(fn($crime) => ['delito'=>strtoupper($crime['crime_name'] ?? ''), 'sancion'=>strtoupper($crime['sanction'] ?? ''), 'ubicacion'=>strtoupper($crime['location'] ?? ''), 'agentes'=>strtoupper($crime['agents'] ?? ''), 'gravedad'=>strtoupper($crime['severity'] ?? '')], $crimes)];
     }
     return $out;
 }
 
 function rangers_fetch_criminal_by_id(string $id): ?array { foreach (rangers_fetch_criminals() as $criminal) if ((string)$criminal['id'] === $id) return $criminal; return null; }
-function rangers_create_criminal(array $data): array { $id=rangers_new_id(); rangers_firebase_set('criminals/'.$id, ['character_id'=>trim((string)($data['character_id']??'')), 'full_name'=>strtoupper(trim($data['nombre']??'')), 'dni'=>strtoupper(trim($data['dni']??'')), 'age'=>($data['edad']??'')===''?null:(int)$data['edad'], 'profile_image'=>rangers_criminal_image_url((string)($data['foto']??'')), 'nationality'=>strtoupper(trim($data['nacionalidad']??'')), 'status'=>strtoupper(trim($data['status']??'EN LIBERTAD')), 'dna'=>!empty($data['adn']), 'fingerprint'=>!empty($data['huella_dactilar'])]); return rangers_fetch_criminal_by_id($id); }
+function rangers_criminal_dni(array $data): string { $name=preg_replace('/[^A-Z]/','',strtoupper((string)($data['nombre']??''))); $letters=str_pad(substr($name,0,2),2,'X'); $character=preg_replace('/[^A-Z0-9]/','',strtoupper((string)($data['character_id']??''))); $user=preg_replace('/[^A-Z0-9]/','',strtoupper((string)($data['created_by_user_id']??''))); return $letters.'-'.($character?:'0').'-'.($user?:'0'); }
+function rangers_create_criminal(array $data): array { $id=rangers_new_id(); rangers_firebase_set('criminals/'.$id, ['character_id'=>trim((string)($data['character_id']??'')), 'full_name'=>strtoupper(trim($data['nombre']??'')), 'dni'=>rangers_criminal_dni($data), 'birth_date'=>trim((string)($data['fecha_nacimiento']??'')), 'alias'=>strtoupper(trim((string)($data['alias']??''))), 'profile_image'=>rangers_criminal_image_url((string)($data['foto']??'')), 'nationality'=>strtoupper(trim($data['nacionalidad']??'')), 'status'=>strtoupper(trim($data['status']??'EN LIBERTAD')), 'dna'=>!empty($data['adn']), 'fingerprint'=>!empty($data['huella_dactilar'])]); return rangers_fetch_criminal_by_id($id); }
 function rangers_update_criminal_status(string $id,string $status): ?array { rangers_firebase_update('criminals/'.$id, ['status'=>strtoupper(trim($status))]); return rangers_fetch_criminal_by_id($id); }
-function rangers_add_crime_to_criminal(string $id,string $crime,string $sanction): ?array { rangers_firebase_push('criminal_crimes/'.$id, ['crime_name'=>strtoupper(trim($crime)), 'sanction'=>strtoupper(trim($sanction)), 'created_at'=>date('Y-m-d H:i:s')]); return rangers_fetch_criminal_by_id($id); }
+function rangers_add_crime_to_criminal(string $id,string $crime,string $sanction,array $details=[]): ?array { rangers_firebase_push('criminal_crimes/'.$id, ['crime_name'=>strtoupper(trim($crime)), 'sanction'=>strtoupper(trim($sanction)), 'location'=>strtoupper(trim((string)($details['ubicacion']??''))), 'agents'=>strtoupper(trim((string)($details['agentes']??''))), 'severity'=>strtoupper(trim((string)($details['gravedad']??''))), 'created_at'=>date('Y-m-d H:i:s')]); return rangers_fetch_criminal_by_id($id); }
 
 // Las multas sólo viven en general_fines; el contador se calcula al cargar cada perfil.
 function rangers_sync_general_fine_to_criminal(array $data): ?array { return null; }

@@ -25,12 +25,13 @@ try {
                 foreach ($stored as $item) {
                     if (($characterId !== '' && (string) ($item['character_id'] ?? '') === $characterId) || $item['nombre'] === $name) { $profile = $item; break; }
                 }
+                if ($profile !== null) $profile['multas_count'] = rangers_mysql_character_fine_count($characterId);
                 $results[] = $profile ?? [
                     'id' => 'CHAR-' . $characterId,
                     'character_id' => $characterId,
                     'nombre' => $name,
                     'dni' => '', 'edad' => null, 'foto' => '', 'nacionalidad' => '', 'status' => 'SIN PERFIL SISPOL',
-                    'multas_count' => 0, 'crimenes_count' => 0, 'crimenes' => [], 'adn' => false, 'huella_dactilar' => false,
+                    'multas_count' => rangers_mysql_character_fine_count($characterId), 'crimenes_count' => 0, 'crimenes' => [], 'adn' => false, 'huella_dactilar' => false,
                     'referencias' => rangers_criminal_sispol_references($name), 'unregistered' => true,
                 ];
             }
@@ -60,7 +61,9 @@ try {
     $action = $payload['action'] ?? '';
 
     if ($action === 'create') {
+        $payload['created_by_user_id'] = (string) ($_SESSION['user_id'] ?? $_SESSION['usuario'] ?? '0');
         $item = rangers_create_criminal($payload);
+        $item['multas_count'] = rangers_mysql_character_fine_count((string) ($item['character_id'] ?? ''));
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: CREÓ PERFIL ' . ($item['nombre'] ?? ''));
         rangers_notify_criminal_profile_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -94,11 +97,16 @@ try {
             echo json_encode(['ok' => false, 'message' => 'Completa crimen y sanción para añadir el antecedente.']);
             exit;
         }
+        if ($crime !== '' && (trim((string) ($payload['ubicacion'] ?? '')) === '' || trim((string) ($payload['agentes'] ?? '')) === '' || trim((string) ($payload['gravedad'] ?? '')) === '')) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'message' => 'Completa ubicación, agente(s) y gravedad para registrar el antecedente.']);
+            exit;
+        }
 
         $item = rangers_update_criminal_status((string) $payload['id'], (string) $payload['status']);
         rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: ACTUALIZÓ ESTADO DE ' . ($item['nombre'] ?? ''));
         if ($crime !== '') {
-            $item = rangers_add_crime_to_criminal((string) $payload['id'], $crime, $sanction);
+            $item = rangers_add_crime_to_criminal((string) $payload['id'], $crime, $sanction, $payload);
             rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: AÑADIÓ CRIMEN A ' . ($item['nombre'] ?? ''));
             rangers_notify_criminal_history_discord($item, $crime, $sanction, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         }
@@ -117,7 +125,8 @@ try {
         $item = rangers_add_crime_to_criminal(
             (string) $payload['id'],
             (string) $payload['delito'],
-            (string) ($payload['sancion'] ?? '')
+            (string) ($payload['sancion'] ?? ''),
+            $payload
         );
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: AÑADIÓ CRIMEN A ' . ($item['nombre'] ?? ''));
         rangers_notify_criminal_history_discord($item, (string) $payload['delito'], (string) ($payload['sancion'] ?? ''), strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));

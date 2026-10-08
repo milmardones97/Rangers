@@ -853,7 +853,7 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 <script>
 window.sispolCriminalesData = <?php echo json_encode($criminales, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/bd_criminales_db.js?v=20261006-2"></script>
+<script src="../js/bd_criminales_db.js?v=20261008-4"></script>
 <script src="../loader_sispol.js"></script>
 </body>
 </html>

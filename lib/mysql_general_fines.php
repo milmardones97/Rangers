@@ -48,7 +48,7 @@ function rangers_external_general_fine_view(array $fine): array
 {
     $date = substr((string) ($fine['fecha'] ?? ''), 0, 10);
     return [
-        'id' => 'MYSQL-' . (string) ($fine['multaID'] ?? ''),
+        'id' => 'PDA-' . (string) ($fine['multaID'] ?? ''),
         'external_multa_id' => (string) ($fine['multaID'] ?? ''),
         'external_character_id' => (string) ($fine['characterID'] ?? ''),
         'storage_id' => '',

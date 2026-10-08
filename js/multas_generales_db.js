@@ -167,7 +167,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnLimpiar.addEventListener("click", limpiarFormulario);
     if (btnRevisar) btnRevisar.addEventListener("click", async () => { if (!multaEnEdicion?.external_multa_id) return; iniciarGuardado(); try { const response = await fetch("api/general_fines.php", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"review_external",external_multa_id:multaEnEdicion.external_multa_id})}); const result = await response.json(); if (!response.ok || !result.ok) throw new Error(result.message || "No se pudo revisar la multa."); await refrescarMultas(); cargarEdicion(multas.find((item) => item.external_multa_id === result.data.external_multa_id) || result.data); setFormStatus("Multa marcada como revisada y guardada en SISPOL.", "success"); } catch (error) { setFormStatus(error.message, "error"); } finally { finalizarGuardado(); } });
-    if (btnEliminar) btnEliminar.addEventListener("click", async () => { if (!multaEnEdicion || !confirm("¿Eliminar esta multa de forma permanente?")) return; iniciarGuardado(); try { const response = await fetch("api/general_fines.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"delete",storage_id:multaEnEdicion.storage_id})}); const result=await response.json(); if(!response.ok||!result.ok)throw new Error(result.message||"No se pudo eliminar."); multas=multas.filter(item=>item.storage_id!==multaEnEdicion.storage_id); renderLista(multas); limpiarFormulario(); setFormStatus("Multa eliminada correctamente.","success"); } catch(error){setFormStatus(error.message,"error");} finally{finalizarGuardado();} });
+    if (btnEliminar) btnEliminar.addEventListener("click", async () => {
+        if (!multaEnEdicion) return;
+        const esExterna = Boolean(multaEnEdicion.external_multa_id);
+        const mensaje = esExterna
+            ? "¿Eliminar la copia de esta multa en SISPOL? La multa permanecerá en la base externa y volverá a aparecer como NO REVISADA."
+            : "¿Eliminar esta multa de Firebase de forma permanente?";
+        if (!confirm(mensaje)) return;
+        iniciarGuardado();
+        try {
+            const response = await fetch("api/general_fines.php",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"delete",storage_id:multaEnEdicion.storage_id})});
+            const result = await response.json();
+            if (!response.ok || !result.ok) throw new Error(result.message || "No se pudo eliminar.");
+            await refrescarMultas();
+            limpiarFormulario();
+            setFormStatus(esExterna ? "Copia de Firebase eliminada. La multa quedó como NO REVISADA." : "Multa eliminada de Firebase correctamente.", "success");
+        } catch(error) { setFormStatus(error.message, "error"); } finally { finalizarGuardado(); }
+    });
 
     async function refrescarMultas() {
         setSearchStatus("Sincronizando multas externas...", "");

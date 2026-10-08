@@ -1,5 +1,21 @@
 <?php
 require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/mysql_characters.php';
+
+/**
+ * Las multas externas son la fuente principal. Si la conexión aún no está
+ * disponible, conservar el contador de los registros internos evita que la
+ * ficha deje de cargar.
+ */
+function rangers_criminal_fine_count(string $characterId, string $name, array $internalFines): int
+{
+    try {
+        return rangers_mysql_character_fine_count($characterId, $name);
+    } catch (Throwable) {
+        $normalizedName = strtoupper(trim($name));
+        return count(array_filter($internalFines, fn($fine) => strtoupper(trim((string) ($fine['person_name'] ?? ''))) === $normalizedName));
+    }
+}
 
 function rangers_criminal_image_url(string $url): string
 {
@@ -37,7 +53,7 @@ function rangers_fetch_criminals(): array
         $out[] = ['id'=>(string)$id, 'character_id'=>(string)($criminal['character_id'] ?? ''), 'nombre'=>$name, 'dni'=>strtoupper($criminal['dni'] ?? ''), 'fecha_nacimiento'=>(string)($criminal['birth_date'] ?? ''), 'alias'=>strtoupper($criminal['alias'] ?? ''), 'edad'=>$criminal['age'] ?? null,
             'foto'=>rangers_criminal_image_url((string)($criminal['profile_image'] ?? '')), 'nacionalidad'=>strtoupper($criminal['nationality'] ?? ''),
             'status'=>strtoupper($criminal['status'] ?? 'EN LIBERTAD'),
-            'multas_count'=>count(array_filter($fines, fn($fine) => strtoupper($fine['person_name'] ?? '') === $name)), 'crimenes_count'=>count($crimes),
+            'multas_count'=>rangers_criminal_fine_count((string) ($criminal['character_id'] ?? ''), $name, $fines), 'crimenes_count'=>count($crimes),
             'adn'=>!empty($criminal['dna']), 'huella_dactilar'=>!empty($criminal['fingerprint']), 'referencias'=>$references,
             'crimenes'=>array_map(fn($crime) => ['delito'=>strtoupper($crime['crime_name'] ?? ''), 'sancion'=>strtoupper($crime['sanction'] ?? ''), 'ubicacion'=>strtoupper($crime['location'] ?? ''), 'agentes'=>strtoupper($crime['agents'] ?? ''), 'gravedad'=>strtoupper($crime['severity'] ?? '')], $crimes)];
     }

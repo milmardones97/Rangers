@@ -81,6 +81,7 @@ try { $resultados = rangers_combined_depot_rows(); } catch (Throwable $exception
 
         .status-line.error{ color:#ff5555; }
         .status-line.success{ color:var(--green); }
+        .save-toast{position:fixed;right:24px;bottom:24px;z-index:20;padding:12px 16px;border:2px solid var(--green);background:#050805;color:var(--green-soft);box-shadow:0 0 18px rgba(183,217,75,.2);font-weight:bold;opacity:0;transform:translateY(12px);pointer-events:none;transition:.15s}.save-toast.show{opacity:1;transform:translateY(0)}
 
         .screen{
             width:100vw;
@@ -519,6 +520,7 @@ try { $resultados = rangers_combined_depot_rows(); } catch (Throwable $exception
 </div>
 
 <div class="scan-flash" id="scanFlash"></div>
+<div class="save-toast" id="saveToast" role="status"></div>
 
 <div class="screen">
     <div class="container">
@@ -707,9 +709,27 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnNuevo = document.getElementById("btnNuevo");
     const btnGuardar = document.getElementById("btnGuardar");
     const formTitle = document.getElementById("formTitle");
+    const saveToast = document.getElementById("saveToast");
+    let savingTimer = null;
 
     const tablaBody = document.getElementById("tablaBody");
     const normalizar = (value) => (value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    const iniciarGuardado = () => {
+        const frames = ["/--", "--\\"];
+        let index = 0;
+        clearInterval(savingTimer);
+        const animar = () => {
+            const mensaje = "GUARDANDO " + frames[index];
+            searchStatus.textContent = mensaje;
+            searchStatus.className = "status-line";
+            saveToast.textContent = mensaje;
+            index = (index + 1) % frames.length;
+        };
+        saveToast.classList.add("show");
+        animar();
+        savingTimer = setInterval(animar, 260);
+    };
+    const finalizarGuardado = () => { clearInterval(savingTimer); saveToast.classList.remove("show"); };
 
     function renderTabla(lista) {
         tablaBody.innerHTML = "";
@@ -762,16 +782,16 @@ document.addEventListener("DOMContentLoaded", () => {
     btnGuardar.addEventListener("click", async () => {
         if (!registroId.value) { searchStatus.textContent = "SELECCIONA UN INGRESO PARA EDITAR SU ESTADO."; searchStatus.className = "status-line error"; return; }
         btnGuardar.disabled = true;
-        searchStatus.textContent = "GUARDANDO ESTADO EN SISPOL...";
+        iniciarGuardado();
         try {
             const response = await fetch("../api/vehicle_depot.php", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({action:"update_status", external_history_id:registroId.value, estado:estado.value, observaciones:observaciones.value})});
             const result = await response.json();
             if (!response.ok || !result.ok) throw new Error(result.message || "No se pudo guardar el estado.");
             await refrescar();
-            searchStatus.textContent = "ESTADO GUARDADO EN FIREBASE. LA CONSULTA SQL NO FUE MODIFICADA.";
+            searchStatus.textContent = "ESTADO ACTUALIZADO CORRECTAMENTE.";
             searchStatus.className = "status-line success";
         } catch (error) { searchStatus.textContent = error.message; searchStatus.className = "status-line error"; }
-        finally { btnGuardar.disabled = false; }
+        finally { finalizarGuardado(); btnGuardar.disabled = false; }
     });
 
     btnBuscar.addEventListener("click", () => {

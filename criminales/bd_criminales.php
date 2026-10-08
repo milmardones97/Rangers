@@ -494,6 +494,16 @@ $criminales = [];
             opacity:.45;
         }
 
+        .scan-card.wanted{
+            border-color:var(--red);
+            box-shadow:inset 4px 0 0 var(--red), 0 0 16px rgba(255,73,73,.20);
+        }
+
+        .scan-card.wanted .scan-name{ color:#ff8b8b; }
+        .wanted-status{ color:var(--red)!important; text-shadow:0 0 8px rgba(255,73,73,.35); }
+        .btn-wanted{ width:auto; min-width:180px; border-color:var(--red); color:#ff9a9a; }
+        .btn-wanted:hover{ background:var(--red); color:#000; }
+
         .profile-shell{
             flex:0 0 auto;
             display:flex;
@@ -687,6 +697,7 @@ $criminales = [];
             <div class="status-row">
                 <div class="status-text" id="statusBusqueda">Esperando consulta de nombre.</div>
                 <div id="scanCounter">ARCHIVOS: <?php echo count($criminales); ?></div>
+                <button type="button" class="btn btn-wanted" id="btnFiltrarBusqueda">Ver en b&uacute;squeda</button>
             </div>
         </div>
 

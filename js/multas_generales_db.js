@@ -25,6 +25,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const normalizar = (value) =>
         (value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
 
+    const coincideBusqueda = (item, consulta) => {
+        if (!consulta) return true;
+        const nombre = normalizar(item.nombre);
+        const abonada = normalizar(item.abonada);
+        const revision = normalizar(item.review_status);
+
+        if (["PENDIENTE", "PENDIENTE DE PAGO", "NO PAGADA", "NO ABONADA"].includes(consulta)) return abonada === "PENDIENTE";
+        if (["ABONADA", "PAGADA", "PAGO"].includes(consulta)) return abonada === "ABONADA";
+        if (["NO REVISADA", "NO REVISADAS", "SIN REVISAR"].includes(consulta)) return revision === "NO REVISADA";
+        if (["REVISADA", "REVISADAS"].includes(consulta)) return revision === "REVISADA";
+        if (["INTERNA", "REGISTRO INTERNO"].includes(consulta)) return revision === "REGISTRO INTERNO";
+
+        return nombre.includes(consulta);
+    };
+
     const setSearchStatus = (text, type) => {
         searchStatus.textContent = text;
         searchStatus.className = "status-line" + (type ? " " + type : "");
@@ -107,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            renderLista(multas.filter((item) => normalizar(item.nombre).includes(consulta)));
+            renderLista(multas.filter((item) => coincideBusqueda(item, consulta)));
         }, 320);
     }
 

@@ -495,8 +495,8 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
             <div class="section-title">Consulta de persona</div>
             <div class="search-form">
                 <div class="field">
-                    <label for="searchNombre">Nombre y apellido</label>
-                    <input type="text" id="searchNombre" placeholder="Buscar por nombre...">
+                    <label for="searchNombre">Nombre, estado de pago o revisión</label>
+                    <input type="text" id="searchNombre" placeholder="Nombre/apellido, pendiente, revisada o no revisada...">
                 </div>
                 <div class="field">
                     <button type="button" class="btn" id="btnBuscar">Buscar multa</button>

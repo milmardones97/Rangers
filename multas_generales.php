@@ -252,7 +252,7 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
             text-transform:uppercase;
         }
 
-        input, textarea{
+        input, textarea, select{
             width:100%;
             background:#000;
             border:2px solid rgba(163,214,63,.45);
@@ -263,6 +263,25 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
             outline:none;
             text-transform:uppercase;
         }
+
+        select{
+            min-height:40px;
+            appearance:none;
+            -webkit-appearance:none;
+            background-color:#000;
+            background-image:linear-gradient(45deg, transparent 50%, var(--green) 50%), linear-gradient(135deg, var(--green) 50%, transparent 50%);
+            background-position:calc(100% - 16px) 16px, calc(100% - 10px) 16px;
+            background-size:6px 6px, 6px 6px;
+            background-repeat:no-repeat;
+            padding-right:32px;
+        }
+
+        select:focus, input:focus, textarea:focus{
+            border-color:var(--green);
+            box-shadow:0 0 0 1px rgba(183,217,75,.24);
+        }
+
+        select option{ background:#000; color:var(--green-soft); }
 
         textarea{
             min-height:88px;
@@ -393,38 +412,17 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
 
         @media (max-width: 980px){
             html, body{ overflow:auto; }
-            .scan-flash{
-            position:fixed;
-            inset:0;
-            pointer-events:none;
-            background:linear-gradient(to bottom, transparent 0%, rgba(215,238,99,.07) 42%, rgba(215,238,99,.18) 50%, rgba(215,238,99,.07) 58%, transparent 100%);
-            opacity:0;
-            transform:translateY(-100%);
-            z-index:4;
-        }
-
-        .scan-flash.run{
-            animation:scanDrop 900ms ease-out forwards;
-        }
-
-        @keyframes scanDrop{
-            0%{ opacity:0; transform:translateY(-100%); }
-            15%{ opacity:.85; }
-            100%{ opacity:0; transform:translateY(100%); }
-        }
-
-        .screen{ height:auto; min-height:100vh; }
-            .main-grid{
-            align-items:stretch;
-            overflow:hidden; grid-template-columns:1fr; }
+            .screen{ height:auto; min-height:100vh; align-items:flex-start; }
+            .container{ height:auto; min-height:calc(100vh - 24px); }
+            .main-grid{ align-items:stretch; overflow:visible; grid-template-columns:1fr; }
             .search-form, .form-grid, .form-actions{ grid-template-columns:1fr; }
             .info{ flex-direction:column; align-items:flex-start; }
         }
     
         @media (max-width: 1180px), (max-height: 760px){
             html, body{ overflow:auto; }
-            .screen{ height:auto; min-height:100vh; padding:8px 10px 6px; }
-            .container{ height:auto; gap:8px; }
+            .screen{ height:auto; min-height:100vh; padding:8px 10px 6px; align-items:flex-start; }
+            .container{ height:auto; min-height:calc(100vh - 14px); gap:8px; }
             .top-bar{ font-size:22px; padding:10px 12px; }
             .info{ font-size:14px; align-items:flex-start; flex-direction:column; gap:6px; }
             .dotted{ height:8px; }
@@ -439,9 +437,13 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
             .fine-item strong{ font-size:16px; }
             .fine-meta{ font-size:12px; }
             .search-form,
-            .main-grid,
             .form-grid,
             .form-actions{ grid-template-columns:1fr; }
+            /* En ventanas bajas se conserva el flujo vertical y el documento
+               puede desplazarse: así ningún panel invade al buscador. */
+            .main-grid{ overflow:visible; min-height:auto; flex:0 0 auto; }
+            .col, .list-shell, .right-panel-scroll{ min-height:auto; }
+            .fine-list{ overflow:visible; }
             .main-grid{ gap:10px; }
             .footer{ align-items:flex-start; gap:10px; flex-direction:column; }
             .btn-back{ width:100%; min-width:0; }

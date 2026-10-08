@@ -293,6 +293,46 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
             border-color:var(--green);
         }
 
+        .biometric-option{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            min-height:46px;
+            padding:10px 12px;
+            border:1px solid rgba(163,214,63,.45);
+            background:rgba(0,0,0,.72);
+            color:var(--green-soft);
+            cursor:pointer;
+            user-select:none;
+        }
+
+        .biometric-option:hover{ border-color:var(--green); background:rgba(72,100,26,.25); }
+        .biometric-option input[type="checkbox"]{
+            appearance:none;
+            -webkit-appearance:none;
+            width:20px;
+            height:20px;
+            flex:0 0 20px;
+            margin:0;
+            padding:0;
+            border:2px solid var(--green);
+            background:#000;
+            cursor:pointer;
+            position:relative;
+        }
+        .biometric-option input[type="checkbox"]:checked{ background:var(--green-strong); }
+        .biometric-option input[type="checkbox"]:checked::after{
+            content:"✓";
+            position:absolute;
+            inset:-3px 0 0;
+            color:#000;
+            font-size:18px;
+            font-weight:bold;
+            line-height:20px;
+            text-align:center;
+        }
+
         .btn{
             display:inline-block;
             width:100%;
@@ -732,8 +772,8 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
                                     <option value="EN BUSQUEDA">EN BUSQUEDA</option>
                                 </select>
                             </div>
-                            <div class="field"><label><input type="checkbox" id="createAdn"> ADN</label></div>
-                            <div class="field"><label><input type="checkbox" id="createHuella"> Huella dactilar</label></div>
+                            <label class="biometric-option">ADN <input type="checkbox" id="createAdn"></label>
+                            <label class="biometric-option">HUELLA DACTILAR <input type="checkbox" id="createHuella"></label>
                         </div>
                         <div class="profile-create-actions">
                             <button type="button" class="btn" id="btnCrearPerfil">Crear perfil nuevo</button>

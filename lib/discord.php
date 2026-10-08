@@ -72,9 +72,10 @@ function rangers_notify_general_fine_discord(array $fine, string $publishedBy): 
     return rangers_discord_notify('DISCORD_GENERAL_FINE_WEBHOOK_URL', 'SISPOL · Multas generales', 'NUEVA MULTA GENERAL · ' . rangers_discord_text($fine['id'] ?? 'SIN ID', 100), [
         ['name' => 'PERSONA SANCIONADA', 'value' => rangers_discord_text($fine['nombre'] ?? ''), 'inline' => true],
         ['name' => 'AGENTE TRAMITADOR', 'value' => rangers_discord_text($fine['agente'] ?? ''), 'inline' => true],
-        ['name' => 'SANCIÓN', 'value' => rangers_discord_text($fine['sancion'] ?? ''), 'inline' => false],
+        ['name' => 'FECHA', 'value' => rangers_discord_text($fine['fecha'] ?? ''), 'inline' => true],
+        ['name' => 'RAZÓN DE MULTA', 'value' => rangers_discord_text($fine['razon'] ?? $fine['sancion'] ?? ''), 'inline' => false],
         ['name' => 'VALOR DE LA SANCIÓN', 'value' => rangers_discord_text($fine['valor'] ?? ''), 'inline' => true],
-        ['name' => 'OBSERVACIONES', 'value' => rangers_discord_text($fine['observaciones'] ?? ''), 'inline' => false],
+        ['name' => 'ABONADA', 'value' => rangers_discord_text($fine['abonada'] ?? ''), 'inline' => true],
         ['name' => 'PUBLICADO POR', 'value' => rangers_discord_text($publishedBy), 'inline' => true],
     ], 15105570);
 }

@@ -512,24 +512,31 @@ try { $multasDb = rangers_fetch_general_fines(); if ($multasDb !== []) $multasMo
                     <form id="formMulta" onsubmit="return false;" style="margin-top:12px;">
                         <div class="form-grid">
                             <div class="field full">
-                                <label for="nombre">Nombre y apellido</label>
+                                <label for="nombre">Nombre del multado</label>
                                 <input type="text" id="nombre">
                             </div>
                             <div class="field full">
-                                <label for="agente">Agente tramitador de la multa</label>
+                                <label for="agente">Nombre del agente</label>
                                 <input type="text" id="agente" value="<?php echo htmlspecialchars($nombreUsuario); ?>">
                             </div>
+                            <div class="field">
+                                <label for="fecha">Fecha</label>
+                                <input type="date" id="fecha">
+                            </div>
                             <div class="field full">
-                                <label for="sancion">Sanci&oacute;n</label>
-                                <input type="text" id="sancion">
+                                <label for="razon">Raz&oacute;n de multa</label>
+                                <input type="text" id="razon">
                             </div>
                             <div class="field">
-                                <label for="valor">Valor de multa</label>
+                                <label for="valor">Cantidad (valor)</label>
                                 <input type="text" id="valor" placeholder="$ 0">
                             </div>
-                            <div class="field full">
-                                <label for="observaciones">Observaciones</label>
-                                <textarea id="observaciones"></textarea>
+                            <div class="field">
+                                <label for="abonada">&iquest;Multa abonada?</label>
+                                <select id="abonada">
+                                    <option value="NO">NO / PENDIENTE</option>
+                                    <option value="SI">SÍ / ABONADA</option>
+                                </select>
                             </div>
                         </div>
 
@@ -561,7 +568,7 @@ window.sispolMultasGeneralesData = <?php echo json_encode($multasMock, JSON_UNES
 window.sispolUsuarioNombre = <?php echo json_encode($nombreUsuario, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 window.sispolPuedeGestionarMultas = <?php echo $puedeGestionarMultas ? 'true' : 'false'; ?>;
 </script>
-<script src="js/multas_generales_db.js?v=<?php echo (int) filemtime(__DIR__ . '/js/multas_generales_db.js'); ?>"></script>
+<script src="js/multas_generales_db.js?v=20261008-1"></script>
 <script src="loader_sispol.js"></script>
 </body>
 </html>

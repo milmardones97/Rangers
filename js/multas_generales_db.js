@@ -7,9 +7,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const formStatus = document.getElementById("formStatus");
     const nombre = document.getElementById("nombre");
     const agente = document.getElementById("agente");
-    const sancion = document.getElementById("sancion");
+    const fecha = document.getElementById("fecha");
+    const razon = document.getElementById("razon");
     const valor = document.getElementById("valor");
-    const observaciones = document.getElementById("observaciones");
+    const abonada = document.getElementById("abonada");
     const btnRegistrar = document.getElementById("btnRegistrar");
     const btnLimpiar = document.getElementById("btnLimpiar");
     const btnEliminar = document.getElementById("btnEliminar");
@@ -44,9 +45,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const limpiarFormulario = () => {
         nombre.value = "";
         agente.value = window.sispolUsuarioNombre || "USUARIO";
-        sancion.value = "";
+        fecha.value = new Date().toISOString().slice(0, 10);
+        razon.value = "";
         valor.value = "";
-        observaciones.value = "";
+        abonada.value = "NO";
         multaEnEdicion = null;
         btnRegistrar.textContent = "Crear multa nueva";
         if (btnEliminar) btnEliminar.disabled = true;
@@ -65,14 +67,14 @@ document.addEventListener("DOMContentLoaded", () => {
         lista.forEach((item) => {
             const li = document.createElement("li");
             li.className = "fine-item";
-            li.innerHTML = `<strong>${item.nombre}</strong><div class="fine-meta"><div>AGENTE: ${item.agente}</div><div>VALOR: ${item.valor}</div><div style="grid-column:1 / -1;">SANCIÓN: ${item.sancion}</div><div style="grid-column:1 / -1;">OBSERVACIONES: ${item.observaciones || "SIN OBSERVACIONES"}</div><div style="grid-column:1 / -1;">ID: ${item.id}</div></div>`;
+            li.innerHTML = `<strong>${item.nombre}</strong><div class="fine-meta"><div>AGENTE: ${item.agente}</div><div>FECHA: ${item.fecha || "SIN FECHA"}</div><div>VALOR: ${item.valor}</div><div>ABONO: ${item.abonada || "PENDIENTE"}</div><div style="grid-column:1 / -1;">RAZÓN: ${item.razon || item.sancion}</div><div style="grid-column:1 / -1;">ID: ${item.id}</div></div>`;
             if (puedeGestionarMultas && item.storage_id) { li.style.cursor = "pointer"; li.title = "Selecciona para editar"; li.addEventListener("click", () => cargarEdicion(item)); }
             fineList.appendChild(li);
         });
 
         setSearchStatus(`Multas cargadas: ${lista.length}`, "success");
     }
-    function cargarEdicion(item) { multaEnEdicion = item; nombre.value=item.nombre||""; agente.value=item.agente||""; sancion.value=item.sancion||""; valor.value=item.valor||""; observaciones.value=item.observaciones||""; btnRegistrar.textContent="Guardar cambios"; if(btnEliminar)btnEliminar.disabled=false; setFormStatus("Editando multa "+item.id+".","success"); }
+    function cargarEdicion(item) { multaEnEdicion = item; nombre.value=item.nombre||""; agente.value=item.agente||""; fecha.value=item.fecha||""; razon.value=item.razon||item.sancion||""; valor.value=item.valor||""; abonada.value=item.abonada === "ABONADA" ? "SI" : "NO"; btnRegistrar.textContent="Guardar cambios"; if(btnEliminar)btnEliminar.disabled=false; setFormStatus("Editando multa "+item.id+".","success"); }
 
     function buscar() {
         const consulta = normalizar(searchNombre.value);
@@ -99,8 +101,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function validarFormulario() {
-        if (!nombre.value.trim() || !agente.value.trim() || !sancion.value.trim() || !valor.value.trim()) {
-            setFormStatus("Completa nombre, agente tramitador, sanción y valor de multa.", "error");
+        if (!nombre.value.trim() || !agente.value.trim() || !fecha.value || !razon.value.trim() || !valor.value.trim()) {
+            setFormStatus("Completa nombre del multado, agente, fecha, razón y cantidad.", "error");
             return false;
         }
 
@@ -130,9 +132,10 @@ document.addEventListener("DOMContentLoaded", () => {
                     storage_id: multaEnEdicion ? multaEnEdicion.storage_id : "",
                     nombre: nombre.value.trim(),
                     agente: agente.value.trim(),
-                    sancion: sancion.value.trim(),
+                    fecha: fecha.value,
+                    razon: razon.value.trim(),
                     valor: valor.value.trim(),
-                    observaciones: observaciones.value.trim()
+                    abonada: abonada.value
                 })
             });
             const result = await response.json();

@@ -16,11 +16,17 @@ function rangers_search_mysql_characters(string $query, string $field = 'nombre'
     return $statement->fetchAll();
 }
 
-function rangers_mysql_character_fine_count(string $characterId): int
+function rangers_mysql_character_fine_count(string $characterId, string $characterName = ''): int
 {
     $characterId = trim($characterId);
-    if ($characterId === '') return 0;
-    $statement = rangers_mysql_general_fines_connection()->prepare('SELECT COUNT(*) FROM multas WHERE characterID = :character_id');
-    $statement->execute(['character_id' => $characterId]);
+    $characterName = trim($characterName);
+    if ($characterId === '' && $characterName === '') return 0;
+    $statement = rangers_mysql_general_fines_connection()->prepare(
+        'SELECT COUNT(*) FROM multas AS m
+         LEFT JOIN characters AS multado ON m.characterID = multado.characterID
+         WHERE CAST(m.characterID AS CHAR) = :character_id
+            OR UPPER(COALESCE(multado.characterName, \'\')) = UPPER(:character_name)'
+    );
+    $statement->execute(['character_id' => $characterId, 'character_name' => $characterName]);
     return (int) $statement->fetchColumn();
 }

@@ -26,14 +26,14 @@ try {
                 foreach ($stored as $item) {
                     if (($characterId !== '' && (string) ($item['character_id'] ?? '') === $characterId) || $item['nombre'] === $name) { $profile = $item; break; }
                 }
-                if ($profile !== null) { $profile['multas_count'] = rangers_mysql_character_fine_count($characterId); $profile['dni'] = rangers_criminal_dni(['nombre' => $name, 'character_id' => $characterId, 'source_user_id' => $sourceUserId]); $profile['source_user_id'] = $sourceUserId; }
+                if ($profile !== null) { $profile['multas_count'] = rangers_mysql_character_fine_count($characterId, $name); $profile['dni'] = rangers_criminal_dni(['nombre' => $name, 'character_id' => $characterId, 'source_user_id' => $sourceUserId]); $profile['source_user_id'] = $sourceUserId; }
                 $results[] = $profile ?? [
                     'id' => 'CHAR-' . $characterId,
                     'character_id' => $characterId,
                     'source_user_id' => $sourceUserId,
                     'nombre' => $name,
                     'dni' => '', 'edad' => null, 'foto' => '', 'nacionalidad' => '', 'status' => 'SIN PERFIL SISPOL',
-                    'multas_count' => rangers_mysql_character_fine_count($characterId), 'crimenes_count' => 0, 'crimenes' => [], 'adn' => false, 'huella_dactilar' => false,
+                    'multas_count' => rangers_mysql_character_fine_count($characterId, $name), 'crimenes_count' => 0, 'crimenes' => [], 'adn' => false, 'huella_dactilar' => false,
                     'referencias' => rangers_criminal_sispol_references($name), 'unregistered' => true,
                 ];
             }
@@ -65,7 +65,7 @@ try {
     if ($action === 'create') {
         $payload['created_by_user_id'] = (string) ($_SESSION['user_id'] ?? $_SESSION['usuario'] ?? '0');
         $item = rangers_create_criminal($payload);
-        $item['multas_count'] = rangers_mysql_character_fine_count((string) ($item['character_id'] ?? ''));
+        $item['multas_count'] = rangers_mysql_character_fine_count((string) ($item['character_id'] ?? ''), (string) ($item['nombre'] ?? ''));
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: CREÓ PERFIL ' . ($item['nombre'] ?? ''));
         rangers_notify_criminal_profile_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

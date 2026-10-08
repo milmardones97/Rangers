@@ -352,6 +352,9 @@ try { $multasDb = rangers_combined_traffic_fines(); if ($multasDb !== []) $multa
             color:var(--green-soft);
         }
 
+        .color-preview{ display:inline-flex; gap:4px; margin-left:6px; vertical-align:middle; }
+        .color-swatch{ width:13px; height:13px; display:inline-block; border:1px solid var(--green-soft); box-shadow:0 0 0 1px #000; }
+
         .summary-box{
             background:rgba(0,0,0,.58);
             border:1px solid rgba(163,214,63,.16);
@@ -604,6 +607,23 @@ document.addEventListener("DOMContentLoaded", () => {
             .toUpperCase();
     }
 
+    function colorLabel(valor) {
+        return String(valor || "").replace(/\s*\(#[0-9A-F]{6}\)/gi, "").trim();
+    }
+
+    function escapeHtml(valor) {
+        const node = document.createElement("span");
+        node.textContent = String(valor || "");
+        return node.innerHTML;
+    }
+
+    function colorMarkup(valor) {
+        const texto = colorLabel(valor) || "SIN COLOR";
+        const tonos = String(valor || "").match(/#[0-9A-F]{6}/gi) || [];
+        const muestras = tonos.map((tono) => `<span class="color-swatch" style="background:${tono}"></span>`).join("");
+        return `${escapeHtml(texto)}${muestras ? `<span class="color-preview" aria-label="Muestra de color">${muestras}</span>` : ""}`;
+    }
+
     function setSearchStatus(texto, tipo) {
         searchStatus.textContent = texto;
         searchStatus.className = "status-line" + (tipo ? " " + tipo : "");
@@ -676,7 +696,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <strong>${item.matricula}</strong>
                 <div class="fine-meta">
                     <div>MODELO: ${item.modelo}</div>
-                    <div>COLOR: ${item.color}</div>
+                    <div>COLOR: ${colorMarkup(item.color)}</div>
                     <div>FALTA: ${item.falta}</div>
                     <div>VALOR: ${item.valor}</div>
                     <div style="grid-column:1 / -1;">OBSERVACIONES: ${item.observaciones || 'SIN OBSERVACIONES'}</div>
@@ -698,7 +718,7 @@ document.addEventListener("DOMContentLoaded", () => {
         multaEnEdicion = item.storage_id ? item : null;
         multaExternaSeleccionada = Boolean(item.external_multa_id);
         modelo.value = item.modelo || "";
-        color.value = item.color || "";
+        color.value = colorLabel(item.color || "");
         matricula.value = item.matricula || "";
         falta.value = item.falta || "";
         valor.value = item.valor || "";

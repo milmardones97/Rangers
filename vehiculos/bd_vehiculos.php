@@ -424,6 +424,21 @@ try { $vehiculosDb = rangers_combined_vehicle_database_records(); if ($vehiculos
             color:var(--white);
         }
 
+        .color-preview{
+            display:inline-flex;
+            gap:4px;
+            margin-left:6px;
+            vertical-align:middle;
+        }
+
+        .color-swatch{
+            width:14px;
+            height:14px;
+            display:inline-block;
+            border:1px solid var(--green-soft);
+            box-shadow:0 0 0 1px #000;
+        }
+
         .form-grid{
             display:grid;
             grid-template-columns:1fr 1fr;
@@ -771,6 +786,23 @@ document.addEventListener("DOMContentLoaded", () => {
             .toUpperCase();
     }
 
+    function colorLabel(valor) {
+        return String(valor || "").replace(/\s*\(#[0-9A-F]{6}\)/gi, "").trim();
+    }
+
+    function escapeHtml(valor) {
+        const node = document.createElement("span");
+        node.textContent = String(valor || "");
+        return node.innerHTML;
+    }
+
+    function colorMarkup(valor) {
+        const texto = colorLabel(valor) || "-";
+        const tonos = String(valor || "").match(/#[0-9A-F]{6}/gi) || [];
+        const muestras = tonos.map((tono) => `<span class="color-swatch" style="background:${tono}"></span>`).join("");
+        return `${escapeHtml(texto)}${muestras ? `<span class="color-preview" aria-label="Muestra de color">${muestras}</span>` : ""}`;
+    }
+
     function pulseFlash() {
         scanFlash.classList.remove("run");
         void scanFlash.offsetWidth;
@@ -826,7 +858,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resumenPropietario.textContent = data.propietario;
         resumenModelo.textContent = data.modelo;
         resumenMatricula.textContent = data.matricula;
-        resumenColor.textContent = data.color;
+        resumenColor.innerHTML = colorMarkup(data.color);
         resumenMultas.textContent = data.multas;
         resumenStatus.textContent = data.status;
     }
@@ -862,7 +894,7 @@ document.addEventListener("DOMContentLoaded", () => {
         propietario.value = item.propietario;
         modelo.value = item.modelo;
         matricula.value = item.matricula;
-        color.value = item.color;
+        color.value = colorLabel(item.color);
         descripcion.value = item.descripcion;
         multas.value = item.multas;
         status.value = item.status;
@@ -891,7 +923,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td>${item.propietario}</td>
                 <td>${item.modelo}</td>
                 <td>${item.matricula}</td>
-                <td>${item.color}</td>
+                <td>${colorMarkup(item.color)}</td>
                 <td>${item.multas}</td>
                 <td>${item.status}</td>
             `;

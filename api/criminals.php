@@ -20,15 +20,17 @@ try {
             $results = [];
             foreach (rangers_search_mysql_characters((string) $_GET['q'], (string) ($_GET['field'] ?? 'nombre')) as $character) {
                 $characterId = (string) ($character['characterID'] ?? '');
+                $sourceUserId = (string) ($character['userID'] ?? '');
                 $name = strtoupper(trim((string) ($character['characterName'] ?? '')));
                 $profile = null;
                 foreach ($stored as $item) {
                     if (($characterId !== '' && (string) ($item['character_id'] ?? '') === $characterId) || $item['nombre'] === $name) { $profile = $item; break; }
                 }
-                if ($profile !== null) $profile['multas_count'] = rangers_mysql_character_fine_count($characterId);
+                if ($profile !== null) { $profile['multas_count'] = rangers_mysql_character_fine_count($characterId); $profile['dni'] = rangers_criminal_dni(['nombre' => $name, 'character_id' => $characterId, 'source_user_id' => $sourceUserId]); $profile['source_user_id'] = $sourceUserId; }
                 $results[] = $profile ?? [
                     'id' => 'CHAR-' . $characterId,
                     'character_id' => $characterId,
+                    'source_user_id' => $sourceUserId,
                     'nombre' => $name,
                     'dni' => '', 'edad' => null, 'foto' => '', 'nacionalidad' => '', 'status' => 'SIN PERFIL SISPOL',
                     'multas_count' => rangers_mysql_character_fine_count($characterId), 'crimenes_count' => 0, 'crimenes' => [], 'adn' => false, 'huella_dactilar' => false,

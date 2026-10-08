@@ -10,72 +10,7 @@ $nombreUsuario = strtoupper(trim($_SESSION['usuario'] ?? 'USUARIO'));
 
 require_once __DIR__ . '/../lib/criminals.php';
 
-$criminales = [
-    [
-        'id' => 1,
-        'nombre' => 'MICHAEL ORTIZ',
-        'dni' => '41.287.553',
-        'edad' => 34,
-        'nacionalidad' => 'ARGENTINA',
-        'status' => 'EN PRISION',
-        'crimenes' => [
-            'ROBO A MANO ARMADA',
-            'EVASION DE CONTROL POLICIAL',
-            'PORTACION ILEGAL DE ARMA'
-        ]
-    ],
-    [
-        'id' => 2,
-        'nombre' => 'SOFIA ALVAREZ',
-        'dni' => '38.901.117',
-        'edad' => 29,
-        'nacionalidad' => 'CHILENA',
-        'status' => 'EN LIBERTAD CONDICIONAL',
-        'crimenes' => [
-            'FALSIFICACION DE DOCUMENTOS',
-            'ESTAFA',
-            'ENCUBRIMIENTO'
-        ]
-    ],
-    [
-        'id' => 3,
-        'nombre' => 'DIEGO ABEIRO',
-        'dni' => '35.118.204',
-        'edad' => 41,
-        'nacionalidad' => 'URUGUAYA',
-        'status' => 'EN LIBERTAD',
-        'crimenes' => [
-            'TRAFICO DE MUEBLES',
-            'EVASION DE IMPUESTOS',
-            'ESTAFA PIRAMIDAL'
-        ]
-    ],
-    [
-        'id' => 4,
-        'nombre' => 'VALENTINA ROJAS',
-        'dni' => '42.774.008',
-        'edad' => 26,
-        'nacionalidad' => 'COLOMBIANA',
-        'status' => 'EN BUSQUEDA',
-        'crimenes' => [
-            'HURTO AGRAVADO',
-            'RESISTENCIA A LA AUTORIDAD'
-        ]
-    ],
-    [
-        'id' => 5,
-        'nombre' => 'MARTIN SOSA',
-        'dni' => '33.842.915',
-        'edad' => 38,
-        'nacionalidad' => 'PARAGUAYA',
-        'status' => 'MUERTO',
-        'crimenes' => [
-            'SECUESTRO',
-            'AMENAZAS',
-            'TENENCIA DE VEHICULO ROBADO'
-        ]
-    ]
-];
+$criminales = [];
 
 try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $criminales = $criminalesDb; } catch (Throwable $exception) {}
 ?>
@@ -321,7 +256,7 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 
         .search-form{
             display:grid;
-            grid-template-columns:1fr 210px;
+            grid-template-columns:180px 1fr 210px;
             gap:12px;
             align-items:end;
         }
@@ -707,7 +642,11 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 
             <form class="search-form" id="searchForm" onsubmit="return false;">
                 <div class="field">
-                    <label for="nombreBusqueda">Nombre del criminal</label>
+                    <label for="tipoBusqueda">Buscar por</label>
+                    <select id="tipoBusqueda"><option value="nombre">Nombre</option><option value="character_id">Character ID</option></select>
+                </div>
+                <div class="field">
+                    <label for="nombreBusqueda">Nombre o Character ID</label>
                     <input type="text" id="nombreBusqueda" placeholder="Escribe un nombre...">
                 </div>
 
@@ -741,12 +680,15 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
                     <div class="profile-summary" id="profileSummary" style="display:none;">
                         <div class="profile-photo-slot" id="perfilFoto" aria-label="Foto de perfil criminal"></div>
                         <div class="profile-line"><span class="profile-label">Nombre:</span><span class="profile-value" id="perfilNombre">-</span></div>
+                        <div class="profile-line"><span class="profile-label">Character ID:</span><span class="profile-value" id="perfilCharacterId">-</span></div>
                         <div class="profile-line"><span class="profile-label">DNI:</span><span class="profile-value" id="perfilDni">-</span></div>
                         <div class="profile-line"><span class="profile-label">Edad:</span><span class="profile-value" id="perfilEdad">-</span></div>
                         <div class="profile-line"><span class="profile-label">Nacionalidad:</span><span class="profile-value" id="perfilNacionalidad">-</span></div>
                         <div class="profile-line"><span class="profile-label">Status:</span><span class="profile-value" id="perfilStatus">-</span></div>
                         <div class="profile-line"><span class="profile-label">Multas:</span><span class="profile-value" id="perfilMultas">0</span></div>
                         <div class="profile-line"><span class="profile-label">Crímenes:</span><span class="profile-value" id="perfilCrimenes">0</span></div>
+                        <div class="profile-line"><span class="profile-label">Perfil biométrico:</span><span class="profile-value" id="perfilBiometrico">SIN REGISTRO</span></div>
+                        <div class="profile-line"><span class="profile-label">Datos SISPOL:</span><span class="profile-value" id="perfilReferencias">SIN COINCIDENCIAS</span></div>
                     </div>
 
                     <div class="profile-placeholder" id="profilePlaceholder">
@@ -759,6 +701,10 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
                             <div class="field">
                                 <label for="createNombre">Nombre</label>
                                 <input type="text" id="createNombre">
+                            </div>
+                            <div class="field">
+                                <label for="createCharacterId">Character ID</label>
+                                <input type="text" id="createCharacterId" readonly>
                             </div>
                             <div class="field">
                                 <label for="createDni">DNI</label>
@@ -786,6 +732,8 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
                                     <option value="EN BUSQUEDA">EN BUSQUEDA</option>
                                 </select>
                             </div>
+                            <div class="field"><label><input type="checkbox" id="createAdn"> ADN</label></div>
+                            <div class="field"><label><input type="checkbox" id="createHuella"> Huella dactilar</label></div>
                         </div>
                         <div class="profile-create-actions">
                             <button type="button" class="btn" id="btnCrearPerfil">Crear perfil nuevo</button>

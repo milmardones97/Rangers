@@ -9,11 +9,34 @@ if (!isset($_SESSION['usuario'])) {
 }
 
 require_once __DIR__ . '/../lib/criminals.php';
+require_once __DIR__ . '/../lib/mysql_characters.php';
 require_once __DIR__ . '/../lib/users_admin.php';
 require_once __DIR__ . '/../lib/discord.php';
 
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+        if (!empty($_GET['q'])) {
+            $stored = rangers_fetch_criminals();
+            $results = [];
+            foreach (rangers_search_mysql_characters((string) $_GET['q'], (string) ($_GET['field'] ?? 'nombre')) as $character) {
+                $characterId = (string) ($character['characterID'] ?? '');
+                $name = strtoupper(trim((string) ($character['characterName'] ?? '')));
+                $profile = null;
+                foreach ($stored as $item) {
+                    if (($characterId !== '' && (string) ($item['character_id'] ?? '') === $characterId) || $item['nombre'] === $name) { $profile = $item; break; }
+                }
+                $results[] = $profile ?? [
+                    'id' => 'CHAR-' . $characterId,
+                    'character_id' => $characterId,
+                    'nombre' => $name,
+                    'dni' => '', 'edad' => null, 'foto' => '', 'nacionalidad' => '', 'status' => 'SIN PERFIL SISPOL',
+                    'multas_count' => 0, 'crimenes_count' => 0, 'crimenes' => [], 'adn' => false, 'huella_dactilar' => false,
+                    'referencias' => rangers_criminal_sispol_references($name), 'unregistered' => true,
+                ];
+            }
+            echo json_encode(['ok' => true, 'data' => $results], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
         echo json_encode([
             'ok' => true,
             'data' => rangers_fetch_criminals(),

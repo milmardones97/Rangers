@@ -12,7 +12,6 @@ require_once __DIR__ . '/../lib/criminals.php';
 
 $criminales = [];
 
-try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $criminales = $criminalesDb; } catch (Throwable $exception) {}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -654,21 +653,6 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
     </style>
 </head>
 <body>
-<div id="pageLoader" class="page-loader">
-    <div class="page-loader-box">
-        <div class="page-loader-title">SISPOL V1</div>
-        <div class="page-loader-module" id="pageLoaderModule">CARGANDO</div>
-        <div class="page-loader-progress">
-            <div class="page-loader-progress-bar" id="pageLoaderBar"></div>
-        </div>
-        <div class="page-loader-status">
-            <span id="pageLoaderSpinner">\--</span>
-            <span id="pageLoaderStatus">INICIALIZANDO</span>
-        </div>
-        <div class="page-loader-dots"></div>
-    </div>
-</div>
-
 <div class="scan-flash" id="scanFlash"></div>
 
 <div class="screen">
@@ -854,7 +838,6 @@ try { $criminalesDb = rangers_fetch_criminals(); if ($criminalesDb !== []) $crim
 window.sispolCriminalesData = <?php echo json_encode($criminales, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
 <script src="../js/bd_criminales_db.js?v=20261008-4"></script>
-<script src="../loader_sispol.js"></script>
 </body>
 </html>
 

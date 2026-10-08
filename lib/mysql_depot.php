@@ -3,6 +3,14 @@
 require_once __DIR__ . '/database.php';
 require_once __DIR__ . '/mysql_general_fines.php';
 
+function rangers_vehicle_model_name(string $model): string
+{
+    static $models;
+    $models ??= require __DIR__ . '/../config/vehicle_models.php';
+    $value = strtoupper(trim($model));
+    return $models[$value] ?? $value;
+}
+
 function rangers_external_depot_rows(): array
 {
     $sql = "SELECT
@@ -55,7 +63,7 @@ function rangers_depot_view(array $row, array $override = []): array
         'vehicle_id' => (string) ($row['vehiculoID'] ?? ''),
         'propietario' => strtoupper(trim((string) ($row['propietario'] ?? 'SIN PROPIETARIO REGISTRADO'))),
         'matricula' => strtoupper(trim((string) ($row['matricula'] ?? 'SIN MATRÍCULA'))),
-        'modelo' => strtoupper(trim((string) ($row['modelo'] ?? 'SIN MODELO'))),
+        'modelo' => rangers_vehicle_model_name((string) ($row['modelo'] ?? 'SIN MODELO')),
         'agente' => strtoupper(trim((string) ($row['agente'] ?? 'SIN AGENTE REGISTRADO'))),
         'fecha' => (string) ($row['fecha'] ?? ''),
         'veces_deposito' => (int) ($row['vecesDeposito'] ?? 0),

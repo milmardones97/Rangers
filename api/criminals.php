@@ -13,6 +13,11 @@ require_once __DIR__ . '/../lib/mysql_characters.php';
 require_once __DIR__ . '/../lib/users_admin.php';
 require_once __DIR__ . '/../lib/discord.php';
 
+function rangers_criminal_is_wanted_status(string $status): bool
+{
+    return strtoupper(trim($status)) === 'EN BUSQUEDA';
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if (!empty($_GET['q'])) {
@@ -68,6 +73,7 @@ try {
         $item['multas_count'] = rangers_mysql_character_fine_count((string) ($item['character_id'] ?? ''), (string) ($item['nombre'] ?? ''));
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: CREÓ PERFIL ' . ($item['nombre'] ?? ''));
         rangers_notify_criminal_profile_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
+        if (rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_notify_wanted_criminal_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -79,8 +85,10 @@ try {
             exit;
         }
 
+        $previous = rangers_fetch_criminal_by_id((string) $payload['id']);
         $item = rangers_update_criminal_status((string) $payload['id'], (string) $payload['status']);
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: ACTUALIZÓ ESTADO DE ' . ($item['nombre'] ?? ''));
+        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_notify_wanted_criminal_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -97,8 +105,10 @@ try {
             echo json_encode(['ok' => false, 'message' => 'La foto debe ser una URL válida.']);
             exit;
         }
+        $previous = rangers_fetch_criminal_by_id((string) $payload['id']);
         $item = rangers_update_criminal((string) $payload['id'], $payload);
         rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: EDITÓ PERFIL ' . ($item['nombre'] ?? ''));
+        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_notify_wanted_criminal_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -142,6 +152,7 @@ try {
             exit;
         }
 
+        $previous = rangers_fetch_criminal_by_id((string) $payload['id']);
         $item = rangers_update_criminal_status((string) $payload['id'], (string) $payload['status']);
         rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: ACTUALIZÓ ESTADO DE ' . ($item['nombre'] ?? ''));
         if ($crime !== '') {
@@ -149,6 +160,7 @@ try {
             rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: AÑADIÓ CRIMEN A ' . ($item['nombre'] ?? ''));
             rangers_notify_criminal_history_discord($item, $crime, $sanction, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         }
+        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_notify_wanted_criminal_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
 
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;

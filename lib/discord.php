@@ -21,20 +21,22 @@ function rangers_discord_text(mixed $value, int $limit = 1024): string
     return function_exists('mb_substr') ? mb_substr($text, 0, $limit) : substr($text, 0, $limit);
 }
 
-function rangers_discord_notify(string $environmentVariable, string $username, string $title, array $fields, int $color = 11326765): bool
+function rangers_discord_notify(string $environmentVariable, string $username, string $title, array $fields, int $color = 11326765, string $imageUrl = ''): bool
 {
     $url = rangers_discord_webhook_url($environmentVariable);
     if ($url === '') return false;
 
+    $embed = [
+        'title' => rangers_discord_text($title, 256),
+        'color' => $color,
+        'fields' => $fields,
+        'footer' => ['text' => 'SISPOL V1'],
+        'timestamp' => gmdate('c'),
+    ];
+    if (filter_var($imageUrl, FILTER_VALIDATE_URL)) $embed['image'] = ['url' => $imageUrl];
     $payload = json_encode([
         'username' => $username,
-        'embeds' => [[
-            'title' => rangers_discord_text($title, 256),
-            'color' => $color,
-            'fields' => $fields,
-            'footer' => ['text' => 'SISPOL V1'],
-            'timestamp' => gmdate('c'),
-        ]],
+        'embeds' => [$embed],
     ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     if ($payload === false) return false;
 
@@ -52,6 +54,22 @@ function rangers_discord_notify(string $environmentVariable, string $username, s
     } catch (Throwable) {
         return false;
     }
+}
+
+function rangers_notify_wanted_criminal_discord(array $criminal, string $publishedBy): bool
+{
+    $crimes = array_values(array_filter(array_map(fn($crime) => trim((string) ($crime['delito'] ?? '')), (array) ($criminal['crimenes'] ?? []))));
+    $details = array_values(array_filter(array_map(fn($crime) => trim((string) ($crime['descripcion'] ?? '')), (array) ($criminal['crimenes'] ?? []))));
+    $crimeText = $crimes === [] ? 'SIN DELITOS REGISTRADOS' : implode(' · ', $crimes);
+    $photo = trim((string) ($criminal['foto'] ?? ''));
+    return rangers_discord_notify('DISCORD_WANTED_CRIMINALS_WEBHOOK_URL', 'SISPOL · Personas buscadas', 'SE BUSCA POR ' . rangers_discord_text($crimeText, 180), [
+        ['name' => 'NOMBRE', 'value' => rangers_discord_text($criminal['nombre'] ?? ''), 'inline' => true],
+        ['name' => 'DNI', 'value' => rangers_discord_text($criminal['dni'] ?? ''), 'inline' => true],
+        ['name' => 'DELITOS', 'value' => rangers_discord_text($crimeText), 'inline' => false],
+        ['name' => 'DESCRIPCIÓN / INFORMACIÓN ADICIONAL', 'value' => $details === [] ? 'SIN INFORMACIÓN ADICIONAL' : rangers_discord_text(implode("\n", $details)), 'inline' => false],
+        ['name' => 'FOTOGRAFÍA', 'value' => $photo === '' ? 'SIN FOTO REGISTRADA' : 'FOTO ADJUNTA EN EL AVISO', 'inline' => true],
+        ['name' => 'PUBLICADO POR', 'value' => rangers_discord_text($publishedBy), 'inline' => true],
+    ], 15158332, $photo);
 }
 
 function rangers_notify_traffic_fine_discord(array $fine, string $publishedBy): bool

@@ -56,20 +56,54 @@ function rangers_discord_notify(string $environmentVariable, string $username, s
     }
 }
 
-function rangers_notify_wanted_criminal_discord(array $criminal, string $publishedBy): bool
+function rangers_wanted_criminal_payload(array $criminal, string $publishedBy, bool $captured = false): array
 {
     $crimes = array_values(array_filter(array_map(fn($crime) => trim((string) ($crime['delito'] ?? '')), (array) ($criminal['crimenes'] ?? []))));
     $details = array_values(array_filter(array_map(fn($crime) => trim((string) ($crime['descripcion'] ?? '')), (array) ($criminal['crimenes'] ?? []))));
     $crimeText = $crimes === [] ? 'SIN DELITOS REGISTRADOS' : implode(' · ', $crimes);
     $photo = trim((string) ($criminal['foto'] ?? ''));
-    return rangers_discord_notify('DISCORD_WANTED_CRIMINALS_WEBHOOK_URL', 'SISPOL · Personas buscadas', 'SE BUSCA POR ' . rangers_discord_text($crimeText, 180), [
+    $fields = [
         ['name' => 'NOMBRE', 'value' => rangers_discord_text($criminal['nombre'] ?? ''), 'inline' => true],
         ['name' => 'DNI', 'value' => rangers_discord_text($criminal['dni'] ?? ''), 'inline' => true],
         ['name' => 'DELITOS', 'value' => rangers_discord_text($crimeText), 'inline' => false],
         ['name' => 'DESCRIPCIÓN / INFORMACIÓN ADICIONAL', 'value' => $details === [] ? 'SIN INFORMACIÓN ADICIONAL' : rangers_discord_text(implode("\n", $details)), 'inline' => false],
         ['name' => 'FOTOGRAFÍA', 'value' => $photo === '' ? 'SIN FOTO REGISTRADA' : 'FOTO ADJUNTA EN EL AVISO', 'inline' => true],
         ['name' => 'PUBLICADO POR', 'value' => rangers_discord_text($publishedBy), 'inline' => true],
-    ], 15158332, $photo);
+    ];
+    if ($captured) $fields[] = ['name' => 'SITUACIÓN', 'value' => 'CAPTURADO · EN PRISIÓN', 'inline' => false];
+    $embed = ['title' => $captured ? 'CAPTURADO · ' . rangers_discord_text($criminal['nombre'] ?? 'SIN NOMBRE', 180) : 'SE BUSCA POR ' . rangers_discord_text($crimeText, 180), 'color' => $captured ? 3066993 : 15158332, 'fields' => $fields, 'footer' => ['text' => 'SISPOL V1'], 'timestamp' => gmdate('c')];
+    if (filter_var($photo, FILTER_VALIDATE_URL)) $embed['image'] = ['url' => $photo];
+    return ['username' => 'SISPOL · Personas buscadas', 'embeds' => [$embed]];
+}
+
+function rangers_discord_webhook_json(string $url, string $method, array $payload): ?array
+{
+    $body = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    if ($body === false) return null;
+    try {
+        if (function_exists('curl_init')) {
+            $handle = curl_init($url);
+            curl_setopt_array($handle, [CURLOPT_CUSTOMREQUEST => $method, CURLOPT_POSTFIELDS => $body, CURLOPT_HTTPHEADER => ['Content-Type: application/json'], CURLOPT_RETURNTRANSFER => true, CURLOPT_TIMEOUT => 8]);
+            $out = curl_exec($handle); $status = (int) curl_getinfo($handle, CURLINFO_HTTP_CODE); curl_close($handle);
+            return is_string($out) && $status >= 200 && $status < 300 ? json_decode($out, true) : null;
+        }
+    } catch (Throwable) {}
+    return null;
+}
+
+function rangers_notify_wanted_criminal_discord(array $criminal, string $publishedBy): ?string
+{
+    $url = rangers_discord_webhook_url('DISCORD_WANTED_CRIMINALS_WEBHOOK_URL');
+    if ($url === '') return null;
+    $response = rangers_discord_webhook_json($url . (str_contains($url, '?') ? '&' : '?') . 'wait=true', 'POST', rangers_wanted_criminal_payload($criminal, $publishedBy));
+    return trim((string) ($response['id'] ?? '')) ?: null;
+}
+
+function rangers_update_wanted_criminal_as_captured_discord(string $messageId, array $criminal, string $publishedBy): bool
+{
+    $url = rangers_discord_webhook_url('DISCORD_WANTED_CRIMINALS_WEBHOOK_URL');
+    if ($url === '' || trim($messageId) === '') return false;
+    return rangers_discord_webhook_json(rtrim($url, '/') . '/messages/' . rawurlencode($messageId), 'PATCH', rangers_wanted_criminal_payload($criminal, $publishedBy, true)) !== null;
 }
 
 function rangers_notify_traffic_fine_discord(array $fine, string $publishedBy): bool

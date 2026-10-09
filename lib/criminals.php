@@ -54,7 +54,7 @@ function rangers_fetch_criminals(): array
             'foto'=>rangers_criminal_image_url((string)($criminal['profile_image'] ?? '')), 'nacionalidad'=>strtoupper($criminal['nationality'] ?? ''),
             'status'=>strtoupper($criminal['status'] ?? 'EN LIBERTAD'),
             'multas_count'=>rangers_criminal_fine_count((string) ($criminal['character_id'] ?? ''), $name, $fines), 'crimenes_count'=>count($crimes),
-            'adn'=>!empty($criminal['dna']), 'huella_dactilar'=>!empty($criminal['fingerprint']), 'referencias'=>$references,
+            'adn'=>!empty($criminal['dna']), 'huella_dactilar'=>!empty($criminal['fingerprint']), 'wanted_discord_message_id'=>(string)($criminal['wanted_discord_message_id'] ?? ''), 'referencias'=>$references,
             'crimenes'=>array_map(fn($crimeId, $crime) => ['id'=>(string)$crimeId, 'delito'=>strtoupper($crime['crime_name'] ?? ''), 'sancion'=>strtoupper($crime['sanction'] ?? ''), 'ubicacion'=>strtoupper($crime['location'] ?? ''), 'agentes'=>strtoupper($crime['agents'] ?? ''), 'gravedad'=>strtoupper($crime['severity'] ?? ''), 'descripcion'=>strtoupper($crime['additional_information'] ?? '')], array_keys($crimes), array_values($crimes))];
     }
     return $out;

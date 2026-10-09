@@ -25,6 +25,18 @@ function rangers_criminal_discord_published_by(): string
     return $rank === '' ? $name : $name . ' · ' . $rank;
 }
 
+function rangers_publish_wanted_criminal(array $criminal): void
+{
+    $messageId = rangers_notify_wanted_criminal_discord($criminal, rangers_criminal_discord_published_by());
+    if ($messageId !== null && !empty($criminal['id'])) rangers_firebase_update('criminals/' . $criminal['id'], ['wanted_discord_message_id' => $messageId]);
+}
+
+function rangers_mark_wanted_criminal_captured(array $previous, array $criminal): void
+{
+    if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) || strtoupper(trim((string) ($criminal['status'] ?? ''))) !== 'EN PRISION') return;
+    rangers_update_wanted_criminal_as_captured_discord((string) ($previous['wanted_discord_message_id'] ?? ''), $criminal, rangers_criminal_discord_published_by());
+}
+
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         if (!empty($_GET['q'])) {
@@ -80,7 +92,7 @@ try {
         $item['multas_count'] = rangers_mysql_character_fine_count((string) ($item['character_id'] ?? ''), (string) ($item['nombre'] ?? ''));
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: CREÓ PERFIL ' . ($item['nombre'] ?? ''));
         rangers_notify_criminal_profile_discord($item, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
-        if (rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_notify_wanted_criminal_discord($item, rangers_criminal_discord_published_by());
+        if (rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_publish_wanted_criminal($item);
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -95,7 +107,8 @@ try {
         $previous = rangers_fetch_criminal_by_id((string) $payload['id']);
         $item = rangers_update_criminal_status((string) $payload['id'], (string) $payload['status']);
         rangers_log_sispol_activity((string)$_SESSION['usuario'], 'CRIMINALES: ACTUALIZÓ ESTADO DE ' . ($item['nombre'] ?? ''));
-        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_notify_wanted_criminal_discord($item, rangers_criminal_discord_published_by());
+        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_publish_wanted_criminal($item);
+        rangers_mark_wanted_criminal_captured($previous ?? [], $item ?? []);
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -115,7 +128,8 @@ try {
         $previous = rangers_fetch_criminal_by_id((string) $payload['id']);
         $item = rangers_update_criminal((string) $payload['id'], $payload);
         rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: EDITÓ PERFIL ' . ($item['nombre'] ?? ''));
-        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_notify_wanted_criminal_discord($item, rangers_criminal_discord_published_by());
+        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_publish_wanted_criminal($item);
+        rangers_mark_wanted_criminal_captured($previous ?? [], $item ?? []);
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;
     }
@@ -167,7 +181,8 @@ try {
             rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: AÑADIÓ CRIMEN A ' . ($item['nombre'] ?? ''));
             rangers_notify_criminal_history_discord($item, $crime, $sanction, strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO')));
         }
-        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_notify_wanted_criminal_discord($item, rangers_criminal_discord_published_by());
+        if (!rangers_criminal_is_wanted_status((string) ($previous['status'] ?? '')) && rangers_criminal_is_wanted_status((string) ($item['status'] ?? ''))) rangers_publish_wanted_criminal($item);
+        rangers_mark_wanted_criminal_captured($previous ?? [], $item ?? []);
 
         echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         exit;

@@ -13,55 +13,9 @@ require_once __DIR__ . '/../lib/investigations.php';
 require_once __DIR__ . '/../interno/access_control.php';
 $puedeGestionarCaso = sispol_puede_gestionar_multas($_SESSION['rango'] ?? '');
 
-$investigaciones = [
-    [
-        'id' => 'INV-24001',
-        'titulo' => 'ROBO DE EVIDENCIA EN DEPOSITO CENTRAL',
-        'fecha_hora' => '2026-03-15 21:30',
-        'agente' => 'SGTO. JAVIER ORTEGA',
-        'descripcion' => 'SE INVESTIGA LA DESAPARICION DE EVIDENCIA VINCULADA A DOS CAUSAS ABIERTAS EN EL DEPOSITO CENTRAL.',
-        'pruebas' => 'REGISTROS DE CAMARA, BITACORA DE GUARDIA, REPORTE DE INGRESOS Y SALIDAS.',
-        'secciones' => [
-            [
-                'titulo' => 'APERTURA DE CASO',
-                'fecha_hora' => '2026-03-15 21:45',
-                'agente' => 'SGTO. JAVIER ORTEGA',
-                'agregado_por' => 'SGTO. JAVIER ORTEGA',
-                'descripcion' => 'SE CREA EL EXPEDIENTE Y SE BLOQUEA EL AREA DE RESGUARDO PARA AUDITORIA INTERNA.',
-                'pruebas' => 'FOTOGRAFIAS DEL AREA Y ACTA DE APERTURA.'
-            ]
-        ]
-    ],
-    [
-        'id' => 'INV-24002',
-        'titulo' => 'SEGUIMIENTO A VEHICULO CON PEDIDO DE EMBARGO',
-        'fecha_hora' => '2026-03-18 14:05',
-        'agente' => 'OF. CRISTIAN REYES',
-        'descripcion' => 'SE MONITOREA LA UBICACION Y MOVIMIENTOS DE UN VEHICULO VINCULADO A DEUDAS Y FUGA DE CONTROL.',
-        'pruebas' => 'INFORME GPS, DENUNCIAS DE TRANSITO Y REPORTE DE PATENTES.',
-        'secciones' => []
-    ],
-    [
-        'id' => 'INV-24003',
-        'titulo' => 'DENUNCIA POR FALSIFICACION DE DOCUMENTOS',
-        'fecha_hora' => '2026-03-20 11:40',
-        'agente' => 'INSP. DANIEL SALAZAR',
-        'descripcion' => 'SE RECIBEN ANTECEDENTES SOBRE EMISION Y USO DE DOCUMENTACION APOCRIFA EN TRAMITES VEHICULARES.',
-        'pruebas' => '',
-        'secciones' => [
-            [
-                'titulo' => 'RECEPCION DE ANTECEDENTES',
-                'fecha_hora' => '2026-03-20 11:55',
-                'agente' => 'INSP. DANIEL SALAZAR',
-                'agregado_por' => 'INSP. DANIEL SALAZAR',
-                'descripcion' => 'SE ADJUNTAN COPIAS DE LOS DOCUMENTOS Y SE IDENTIFICA A DOS POSIBLES INVOLUCRADOS.',
-                'pruebas' => 'COPIAS ESCANEADAS Y DECLARACION DEL DENUNCIANTE.'
-            ]
-        ]
-    ]
-];
-
-try { $investigacionesDb = rangers_fetch_investigations(); if ($investigacionesDb !== []) $investigaciones = $investigacionesDb; } catch (Throwable $exception) {}
+// Los expedientes se cargan exclusivamente desde Firebase. No se conservan
+// casos de demostración para no mezclarlos con los registros operativos.
+try { $investigaciones = rangers_fetch_investigations(); } catch (Throwable $exception) { $investigaciones = []; }
 ?>
 <!DOCTYPE html>
 <html lang="es">

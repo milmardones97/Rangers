@@ -62,7 +62,16 @@ function rangers_fetch_user_control_records(): array
     foreach (rangers_firebase_keyed_rows('users') as $user) $usersByAgent[(string)($user['agent_id'] ?? '')] = $user;
     $records = [];
     foreach (rangers_firebase_keyed_rows('agents') as $id => $agent) $records[] = rangers_record((string)$id, $agent, $usersByAgent[(string)$id] ?? []);
-    usort($records, fn($a, $b) => strcmp($a['nombre'], $b['nombre']));
+    $rankOrder = [];
+    $position = 0;
+    foreach (require __DIR__ . '/../config/ranks.php' as $ranks) {
+        foreach ($ranks as $rank) $rankOrder[strtoupper($rank)] = $position++;
+    }
+    usort($records, function ($a, $b) use ($rankOrder) {
+        $left = $rankOrder[strtoupper((string) ($a['rango'] ?? ''))] ?? PHP_INT_MAX;
+        $right = $rankOrder[strtoupper((string) ($b['rango'] ?? ''))] ?? PHP_INT_MAX;
+        return $left === $right ? strcmp($a['nombre'], $b['nombre']) : $left <=> $right;
+    });
     return $records;
 }
 

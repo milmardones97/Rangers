@@ -275,7 +275,8 @@ $criminales = [];
         }
 
         input,
-        select{
+        select,
+        textarea{
             width:100%;
             background:#000;
             border:2px solid rgba(163,214,63,.45);
@@ -291,6 +292,7 @@ $criminales = [];
         select:focus{
             border-color:var(--green);
         }
+        textarea{ min-height:78px; resize:vertical; }
 
         .biometric-option{
             display:flex;
@@ -732,6 +734,19 @@ $criminales = [];
                         <div class="profile-line"><span class="profile-label">Datos SISPOL:</span><span class="profile-value" id="perfilReferencias">SIN COINCIDENCIAS</span></div>
                     </div>
 
+                    <div class="profile-create-panel" id="profileEditPanel" style="display:none;">
+                        <div class="section-title" style="font-size:16px; margin-bottom:0;">Editar perfil</div>
+                        <div class="profile-create-grid">
+                            <div class="field"><label for="editNombre">Nombre</label><input type="text" id="editNombre"></div>
+                            <div class="field"><label for="editFechaNacimiento">Fecha de nacimiento</label><input type="date" id="editFechaNacimiento"></div>
+                            <div class="field"><label for="editFoto">Foto de perfil (URL)</label><input type="url" id="editFoto" placeholder="https://i.imgur.com/imagen.jpg"></div>
+                            <div class="field"><label for="editNacionalidad">Nacionalidad</label><input type="text" id="editNacionalidad"></div>
+                            <div class="field"><label for="editAlias">Alias / Apodo</label><input type="text" id="editAlias"></div>
+                            <div class="field"><label for="editStatus">Status</label><select id="editStatus"><option value="EN PRISION">EN PRISION</option><option value="EN LIBERTAD">EN LIBERTAD</option><option value="EN LIBERTAD CONDICIONAL">EN LIBERTAD CONDICIONAL</option><option value="MUERTO">MUERTO</option><option value="EN BUSQUEDA">EN BUSQUEDA</option></select></div>
+                        </div>
+                        <div class="profile-create-actions"><button type="button" class="btn" id="btnGuardarPerfil">Guardar cambios del perfil</button></div>
+                    </div>
+
                     <div class="profile-placeholder" id="profilePlaceholder">
                         Ejecuta una b&uacute;squeda para cargar la ficha del sospechoso.
                     </div>
@@ -820,6 +835,10 @@ $criminales = [];
                         <div class="field">
                             <label for="nuevaSancion">Sentencia</label>
                             <input type="text" id="nuevaSancion" placeholder="Sentencia aplicada..." disabled>
+                        </div>
+                        <div class="field full">
+                            <label for="descripcionCrimen">Descripci&oacute;n / informaci&oacute;n adicional</label>
+                            <textarea id="descripcionCrimen" placeholder="Antecedentes, detalles u observaciones del delito..." disabled></textarea>
                         </div>
                         <div class="field full">
                             <label>Gravedad</label>

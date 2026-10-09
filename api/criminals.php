@@ -85,6 +85,43 @@ try {
         exit;
     }
 
+    if ($action === 'update_profile') {
+        if (empty($payload['id']) || trim((string) ($payload['nombre'] ?? '')) === '') {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'message' => 'El nombre del perfil es obligatorio.']);
+            exit;
+        }
+        $photo = trim((string) ($payload['foto'] ?? ''));
+        if ($photo !== '' && !filter_var($photo, FILTER_VALIDATE_URL)) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'message' => 'La foto debe ser una URL válida.']);
+            exit;
+        }
+        $item = rangers_update_criminal((string) $payload['id'], $payload);
+        rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: EDITÓ PERFIL ' . ($item['nombre'] ?? ''));
+        echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    if ($action === 'update_crime') {
+        if (empty($payload['id']) || empty($payload['crime_id'])) {
+            http_response_code(422);
+            echo json_encode(['ok' => false, 'message' => 'Selecciona un delito para actualizar.']);
+            exit;
+        }
+        foreach (['ubicacion', 'agentes', 'delito', 'sancion', 'gravedad'] as $field) {
+            if (trim((string) ($payload[$field] ?? '')) === '') {
+                http_response_code(422);
+                echo json_encode(['ok' => false, 'message' => 'Completa todos los datos obligatorios del delito.']);
+                exit;
+            }
+        }
+        $item = rangers_update_criminal_crime((string) $payload['id'], (string) $payload['crime_id'], $payload);
+        rangers_log_sispol_activity((string) $_SESSION['usuario'], 'CRIMINALES: EDITÓ DELITO DE ' . ($item['nombre'] ?? ''));
+        echo json_encode(['ok' => true, 'data' => $item], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
     if ($action === 'save_history') {
         if (empty($payload['id']) || empty($payload['status'])) {
             http_response_code(422);

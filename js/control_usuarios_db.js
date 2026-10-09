@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const list = byId('agentList'), status = byId('statusText'), logs = byId('logList'), form = byId('userForm');
     const search = byId('agentSearch'), name = byId('formNombre'), rank = byId('formRango'), badge = byId('formPlaca'), password = byId('formPassword');
     const preview = byId('profilePreview'), save = byId('btnGuardar'), disable = byId('btnDesactivar'), level = byId('formNivel'), imageUrl = byId('formImagen'), toast = byId('saveToast');
-    const rankIcons = {COMISIONADO:'Comisionado.webp',DIRECTOR:'Director.gif',SUBDIRECTOR:'Subdirector.png',SUPERINTENDENTE:'Superintendente.png',TENIENTE:'Teniente.png',SARGENTO:'Sargento.png',CABO:'Cabo.png',INVESTIGADOR:'Investigador.png','PARK RANGER':'Ranger.png'};
+    const rankIcons = {COMISIONADO:'Comisionado.webp',DIRECTOR:'Director.gif',SUBDIRECTOR:'Subdirector.png',SUPERINTENDENTE:'Superintendente.png',INSPECTOR:'Inspector.png',TENIENTE:'Teniente.png',SARGENTO:'Sargento.png',CABO:'Cabo.png',INVESTIGADOR:'Investigador.png','PARK RANGER':'Ranger.png'};
     const updateLevel = () => { const group = rank.selectedOptions[0]?.parentElement?.label || 'OFICIALES'; level.value = (group === 'JEFATURA' || group === 'COORDINACIÓN') ? 'JEFATURA' : (group === 'SUPERVISORES' ? 'SUPERVISOR' : 'OFICIAL'); };
     const normalizeImageUrl = (value) => {
         const url = value.trim();

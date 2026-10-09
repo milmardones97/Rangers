@@ -7,6 +7,7 @@ function rangers_rank_icon_url(string $rank, string $relativeDirectory = '../ran
         'DIRECTOR' => 'Director.gif',
         'SUBDIRECTOR' => 'Subdirector.png',
         'SUPERINTENDENTE' => 'Superintendente.png',
+        'INSPECTOR' => 'Inspector.png',
         'TENIENTE' => 'Teniente.png',
         'SARGENTO' => 'Sargento.png',
         'CABO' => 'Cabo.png',

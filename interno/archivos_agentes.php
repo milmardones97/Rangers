@@ -580,14 +580,13 @@ try {
     <div class="bottom-actions boot-line" id="boot6">
         <div class="left-actions">
             <a href="asuntos_internos.php" class="action-btn" id="btnVolver">VOLVER</a>
-            <a href="nuevo_agente.php" class="action-btn" id="btnNuevo">AÑADIR AGENTE</a>
             <button type="button" class="action-btn" id="btnRecargar">RECARGAR</button>
         </div>
 
         <div class="footer-mark">ANGEL PINE RANGERS</div>
     </div>
 
-    <div class="hint boot-line" id="boot7">FLECHAS ↑ ↓ PARA NAVEGAR · ENTER PARA ABRIR · N PARA NUEVO · ESC PARA VOLVER</div>
+    <div class="hint boot-line" id="boot7">FLECHAS ↑ ↓ PARA NAVEGAR · ENTER PARA ABRIR · ESC PARA VOLVER</div>
     <div class="status-line boot-line" id="boot8">[ ARCHIVOS DE AGENTES CARGADOS ]<span class="cursor">█</span></div>
 </div>
 
@@ -698,11 +697,6 @@ try {
             goToLink('asuntos_internos.php');
         }
 
-        if (e.key === 'n' || e.key === 'N') {
-            e.preventDefault();
-            goToLink('nuevo_agente.php');
-        }
-
         if (e.key === 'r' || e.key === 'R') {
             e.preventDefault();
             location.reload();
@@ -718,12 +712,6 @@ try {
         e.preventDefault();
         if (!bootFinished) return;
         goToLink('asuntos_internos.php');
-    });
-
-    document.getElementById('btnNuevo').addEventListener('click', (e) => {
-        e.preventDefault();
-        if (!bootFinished) return;
-        goToLink('nuevo_agente.php');
     });
 
     window.addEventListener('load', () => {

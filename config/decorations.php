@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'MEDALLA_HONOR' => ['name' => 'MEDALLA DE HONOR', 'file' => 'Medalla Honor.png'],
+    'MEDALLA_HONOR' => ['name' => 'MEDALLA DE HONOR', 'file' => 'MedallaHonor.png'],
     'CRUZ_COMBATE' => ['name' => 'CRUZ DE COMBATE DE RANGERS', 'file' => 'CRUZCOMBATEPOLICIAL1.png'],
     'MEDALLA_VALOR' => ['name' => 'MEDALLA AL VALOR', 'file' => 'VALOR1.png'],
     'MENCION_HONOR' => ['name' => 'MENCIÓN DE HONOR', 'file' => 'MPD1.jpg'],

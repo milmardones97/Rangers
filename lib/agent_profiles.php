@@ -9,12 +9,24 @@ function rangers_agent_profile(string $agentId): array
     foreach (rangers_firebase_keyed_rows('users') as $item) if ((string)($item['agent_id'] ?? '') === $agentId) { $user = $item; break; }
     $updates = array_values(rangers_firebase_get('agent_profile_updates/' . $agentId));
     usort($updates, fn($a, $b) => strcmp($b['at'] ?? '', $a['at'] ?? ''));
-    return ['id'=>$agentId, 'agent'=>$agent, 'user'=>$user, 'updates'=>$updates];
+    $catalog = require __DIR__ . '/../config/decorations.php';
+    $stored = rangers_firebase_get('agent_decorations/' . $agentId);
+    $decorations = [];
+    foreach ($stored as $key => $enabled) if (!empty($enabled) && isset($catalog[$key])) $decorations[$key] = $catalog[$key];
+    return ['id'=>$agentId, 'agent'=>$agent, 'user'=>$user, 'updates'=>$updates, 'decorations'=>$decorations];
+}
+
+function rangers_save_agent_decorations(string $agentId, array $decorationKeys): void
+{
+    $catalog = require __DIR__ . '/../config/decorations.php';
+    $selected = [];
+    foreach ($decorationKeys as $key) if (isset($catalog[$key])) $selected[$key] = true;
+    rangers_firebase_request('PUT', 'agent_decorations/' . $agentId, $selected ?: []);
 }
 
 function rangers_add_agent_profile_update(string $agentId, string $category, string $body, string $author, string $at): void
 {
-    $allowed = ['SANCIÓN', 'ASCENSO', 'DESCENSO', 'SUSPENSIÓN', 'DESPEDIDO', 'RETIRADO'];
+    $allowed = ['ACTIVO', 'SANCIÓN', 'CONDECORACIÓN', 'ASCENSO', 'DESCENSO', 'SUSPENSIÓN', 'DESPEDIDO', 'RETIRADO'];
     $category = strtoupper(trim($category));
     $body = strtoupper(trim($body));
     if (!in_array($category, $allowed, true)) throw new RuntimeException('Categoría de actualización no válida.');

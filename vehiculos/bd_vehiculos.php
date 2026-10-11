@@ -162,6 +162,7 @@ try { $vehiculosDb = rangers_combined_vehicle_database_records(); if ($vehiculos
         .container{
             width:min(1380px, 100%);
             height:100%;
+            min-height:0;
             display:flex;
             flex-direction:column;
             gap:10px;
@@ -243,6 +244,13 @@ try { $vehiculosDb = rangers_combined_vehicle_database_records(); if ($vehiculos
             display:flex;
             flex-direction:column;
             gap:10px;
+        }
+
+        .left-col > .panel{
+            flex:1 1 auto;
+            min-height:0;
+            display:flex;
+            flex-direction:column;
         }
 
         .field{
@@ -350,6 +358,8 @@ try { $vehiculosDb = rangers_combined_vehicle_database_records(); if ($vehiculos
             overflow:auto;
             border:1px solid rgba(163,214,63,.20);
             background:#000;
+            scrollbar-color:var(--green-dark) #050805;
+            scrollbar-width:thin;
         }
 
         table{
@@ -480,7 +490,11 @@ try { $vehiculosDb = rangers_combined_vehicle_database_records(); if ($vehiculos
         }
 
         .detail-panel{
+            flex:1 1 auto;
+            min-height:0;
             overflow:auto;
+            scrollbar-color:var(--green-dark) #050805;
+            scrollbar-width:thin;
         }
 
         @media (max-width: 1280px){
@@ -518,6 +532,65 @@ try { $vehiculosDb = rangers_combined_vehicle_database_records(); if ($vehiculos
 
             .case-file{
                 font-size:15px;
+            }
+        }
+
+        @media (max-height: 760px){
+            .screen{
+                padding:8px 10px 6px;
+            }
+
+            .container{
+                gap:7px;
+            }
+
+            .top-bar{
+                padding:8px 12px;
+                font-size:22px;
+            }
+
+            .info{
+                gap:4px;
+                font-size:14px;
+            }
+
+            .dotted{
+                height:8px;
+            }
+
+            .panel{
+                padding:10px 12px;
+            }
+
+            .section-title{
+                margin-bottom:7px;
+                font-size:16px;
+            }
+
+            .status-line{
+                min-height:18px;
+                margin-top:7px;
+                font-size:14px;
+            }
+
+            .hint{
+                margin-top:7px;
+                font-size:11px;
+            }
+
+            th, td{
+                padding:7px 9px;
+                font-size:13px;
+            }
+
+            .footer{
+                min-height:38px;
+            }
+
+            .btn-back{
+                min-width:130px;
+                min-height:38px;
+                padding:6px 10px;
             }
         }
 

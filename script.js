@@ -18,6 +18,8 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        document.body.classList.remove("login-loading");
+        document.body.classList.add("login-ready");
         bootSequence.classList.add("is-hidden");
         window.setTimeout(() => bootSequence.remove(), 320);
         usuario.focus();

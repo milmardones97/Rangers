@@ -37,6 +37,16 @@ body{
         radial-gradient(circle at center, rgba(25,25,25,0.14) 0%, rgba(0,0,0,1) 72%);
 }
 
+body.login-loading .screen{
+    opacity: 0;
+    visibility: hidden;
+    animation: login-fallback-reveal 360ms 1500ms ease-out forwards;
+}
+
+body.login-ready .screen{
+    animation: login-crt-reveal 380ms ease-out both;
+}
+
 .wrapper{
     width: min(100%, 940px);
     max-height: calc(100vh - 12px);
@@ -242,7 +252,9 @@ body::after{
     place-items: center;
     padding: 20px;
     overflow: hidden;
-    background: #000;
+    background:
+        radial-gradient(ellipse at center, rgba(35, 55, 5, 0.2) 0%, #000 62%),
+        #000;
     color: var(--green);
     transition: opacity 280ms ease, visibility 280ms ease;
 }
@@ -251,13 +263,25 @@ body::after{
     content: "";
     position: absolute;
     inset: 0;
-    opacity: 0.25;
+    z-index: 1;
+    opacity: 0.32;
     background: repeating-linear-gradient(
         to bottom,
         rgba(183, 217, 75, 0.12) 0 1px,
         transparent 1px 4px
     );
     pointer-events: none;
+}
+
+.boot-sequence::after{
+    content: "";
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    background: linear-gradient(90deg, transparent 0 46%, rgba(208, 255, 117, 0.28) 50%, transparent 54%);
+    animation: boot-crt-flicker 780ms steps(2, end) both;
 }
 
 .boot-sequence.is-hidden{
@@ -272,22 +296,22 @@ body::after{
     height: 2px;
     background: var(--green);
     box-shadow: 0 0 12px 5px rgba(183, 217, 75, 0.75), 0 0 80px 24px rgba(183, 217, 75, 0.2);
-    animation: boot-screen-on 360ms ease-out both;
+    animation: boot-screen-on 380ms ease-out both;
 }
 
 .boot-sequence__panel{
     position: relative;
-    z-index: 1;
+    z-index: 3;
     width: min(100%, 690px);
     padding: clamp(16px, 3vw, 28px);
     border: 2px solid rgba(183, 217, 75, 0.75);
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 4, 0, 0.96);
     box-shadow: 0 0 28px rgba(183, 217, 75, 0.18);
     font-size: clamp(12px, 1vw + 0.35vh, 18px);
     font-weight: bold;
     letter-spacing: 0.08em;
     text-align: left;
-    animation: boot-panel-in 300ms 140ms ease-out both;
+    animation: boot-panel-in 300ms 180ms ease-out both;
 }
 
 .boot-sequence__brand,
@@ -334,9 +358,10 @@ body::after{
 }
 
 @keyframes boot-screen-on{
-    0%{ transform: scaleY(0.01); opacity: 0; }
-    55%{ transform: scaleY(1); opacity: 1; }
-    100%{ transform: scaleY(1); opacity: 0; }
+    0%{ transform: scaleY(0.01) scaleX(0.2); opacity: 0; }
+    42%{ transform: scaleY(0.04) scaleX(1); opacity: 1; }
+    72%{ transform: scaleY(1) scaleX(1); opacity: 0.45; }
+    100%{ transform: scaleY(1) scaleX(1); opacity: 0; }
 }
 
 @keyframes boot-panel-in{
@@ -346,6 +371,26 @@ body::after{
 
 @keyframes boot-cursor{
     50%{ opacity: 0; }
+}
+
+@keyframes boot-crt-flicker{
+    0%{ opacity: 0; transform: translateX(-32%); }
+    16%{ opacity: 0.55; }
+    22%{ opacity: 0.06; }
+    40%{ opacity: 0.3; transform: translateX(24%); }
+    64%{ opacity: 0.05; }
+    100%{ opacity: 0; transform: translateX(40%); }
+}
+
+@keyframes login-crt-reveal{
+    0%{ opacity: 0; filter: brightness(2.4) contrast(1.6); transform: scaleY(0.015); }
+    34%{ opacity: 1; filter: brightness(1.7) contrast(1.35); transform: scaleY(0.04); }
+    100%{ opacity: 1; filter: none; transform: scaleY(1); }
+}
+
+@keyframes login-fallback-reveal{
+    0%{ opacity: 0; visibility: visible; }
+    100%{ opacity: 1; visibility: visible; }
 }
 
 .logo-img{
@@ -488,7 +533,15 @@ body::after{
 
     .boot-sequence__glow,
     .boot-sequence__panel,
-    .boot-sequence__line::after{
+    .boot-sequence__line::after,
+    .boot-sequence::after,
+    body.login-loading .screen,
+    body.login-ready .screen{
         animation: none;
+    }
+
+    body.login-loading .screen{
+        visibility: visible;
+        opacity: 1;
     }
 }

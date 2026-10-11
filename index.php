@@ -17,9 +17,9 @@ unset($_SESSION['login_error']);
     <title>Rangers de Angel Pine</title>
     <link rel="icon" type="image/png" href="Logo.png">
     <link rel="apple-touch-icon" href="Logo.png">
-    <link rel="stylesheet" href="style.css?v=<?php echo (int) filemtime(__DIR__ . '/style.css'); ?>">
+    <link rel="stylesheet" href="style.css?v=login-crt-2">
 </head>
-<body>
+<body class="login-loading">
 
 <div class="boot-sequence" id="bootSequence" aria-hidden="true">
     <div class="boot-sequence__glow"></div>
@@ -77,6 +77,6 @@ unset($_SESSION['login_error']);
     </div>
 </div>
 
-<script src="script.js?v=<?php echo (int) filemtime(__DIR__ . '/script.js'); ?>"></script>
+<script src="script.js?v=login-crt-2"></script>
 </body>
 </html>

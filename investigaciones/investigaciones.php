@@ -32,19 +32,24 @@ try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $e
             --danger:#ff5959;
             --shadow:rgba(215,238,99,.22);
         }
-        *{ box-sizing:border-box; margin:0; padding:0; }
+        *{ box-sizing:border-box; margin:0; padding:0; scrollbar-color:#526f1b #050805; scrollbar-width:thin; }
+        *::-webkit-scrollbar{ width:14px; height:14px; }
+        *::-webkit-scrollbar-track{ background:repeating-linear-gradient(-45deg, rgba(163,214,63,.08) 0 10px, rgba(163,214,63,.03) 10px 20px), #050805; border-left:1px solid rgba(163,214,63,.18); }
+        *::-webkit-scrollbar-thumb{ background:linear-gradient(to bottom, rgba(216,239,140,.95), rgba(82,111,27,.95)); border:2px solid #050805; box-shadow:inset 0 0 0 1px rgba(183,217,75,.28); }
+        *::-webkit-scrollbar-corner{ background:#050805; }
         html, body{ width:100%; height:100%; overflow:hidden; }
         body{ background:var(--bg); color:var(--green); font-family:"Courier New", monospace; }
         .screen{ width:100vw; height:100vh; padding:14px 18px 10px; display:flex; justify-content:center; }
-        .container{ width:min(1380px, 100%); height:100%; display:flex; flex-direction:column; gap:10px; }
+        .container{ width:min(1380px, 100%); height:100%; min-height:0; display:flex; flex-direction:column; gap:10px; }
         .top-bar{ background:var(--green-bar); color:#111; font-weight:bold; font-size:28px; padding:12px 16px; text-transform:uppercase; box-shadow:0 0 16px var(--shadow); }
-        .info{ display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-size:18px; font-weight:bold; text-transform:uppercase; }
+        .info{ display:flex; justify-content:flex-start; gap:16px 36px; flex-wrap:wrap; font-size:18px; font-weight:bold; text-transform:uppercase; overflow-wrap:anywhere; }
         .dotted{ height:10px; background:repeating-linear-gradient(to right, var(--green) 0 8px, transparent 8px 16px); }
         .panel{ background:repeating-linear-gradient(-45deg, rgba(163,214,63,.08) 0 12px, rgba(163,214,63,.03) 12px 24px); border:1px solid rgba(163,214,63,.18); padding:14px 16px; min-height:0; }
         .section-title{ font-size:20px; font-weight:bold; text-transform:uppercase; margin-bottom:10px; }
         .search-form{ display:grid; grid-template-columns:180px minmax(0, 1fr) 160px; gap:10px; align-items:end; }
         .main-grid{ flex:1 1 auto; min-height:0; display:grid; grid-template-columns:minmax(360px,.95fr) minmax(0,1.3fr); gap:16px; }
         .left-col,.right-col,.case-shell,.detail-panel{ min-height:0; display:flex; flex-direction:column; gap:10px; }
+        .case-shell,.detail-panel{ flex:1 1 auto; }
         .field{ display:flex; flex-direction:column; gap:5px; min-width:0; }
         label{ font-size:13px; font-weight:bold; color:var(--white); text-transform:uppercase; }
         input{ width:100%; background:#000; border:2px solid rgba(163,214,63,.45); color:var(--green-soft); padding:8px 10px; font-size:15px; font-family:"Courier New", monospace; text-transform:uppercase; }
@@ -77,10 +82,29 @@ try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $e
         .timeline-proof{ margin-top:8px; }
         .detail-actions{ display:flex; justify-content:flex-end; }
         .detail-actions .btn{ width:auto; min-width:240px; }
-        .footer{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+        .footer{ display:flex; flex:0 0 auto; gap:16px; align-items:center; flex-wrap:wrap; }
         .btn-back{ width:auto; min-width:160px; }
         .case-file{ font-size:18px; font-weight:bold; text-transform:uppercase; color:var(--white); }
         @media (max-width:1180px){ .main-grid,.search-form,.summary-grid,.data-list{ grid-template-columns:1fr; } }
+        @media (max-height:760px){
+            .screen{ padding:8px 10px 6px; }
+            .container{ gap:7px; }
+            .top-bar{ padding:8px 12px; font-size:22px; }
+            .info{ gap:4px 22px; font-size:14px; }
+            .dotted{ height:8px; }
+            .panel{ padding:10px 12px; }
+            .section-title{ margin-bottom:7px; font-size:16px; }
+            .status-line{ margin-top:7px; min-height:18px; font-size:13px; }
+            .case-card{ padding:9px 11px; }
+            .case-id,.case-meta{ font-size:12px; }
+            .case-title{ margin-bottom:6px; font-size:15px; }
+            .detail-scroll{ gap:9px; }
+            .summary-grid{ gap:7px 12px; font-size:13px; }
+            .description-box,.proof-box,.timeline,.data-list{ padding:9px; }
+            .footer{ min-height:38px; }
+            .btn-back{ min-width:130px; min-height:38px; padding:6px 10px; }
+            .case-file{ font-size:14px; }
+        }
         @media (max-width:860px){ html,body{ overflow:auto; } .screen{ height:auto; min-height:100vh; padding:10px 12px 8px; } .container{ height:auto; } .detail-panel{ overflow:visible; } .detail-scroll{ overflow:visible; padding-right:0; } }
     </style>
 </head>

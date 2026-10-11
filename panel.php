@@ -16,6 +16,7 @@ $menuItems = [
     ["texto" => "Base de datos de vehículos", "link" => "vehiculos/bd_vehiculos.php"],
     ["texto" => "Depósito de vehículos", "link" => "vehiculos/deposito_vehiculos.php"],
     ["texto" => "Base de datos de criminales", "link" => "criminales/bd_criminales.php"],
+    ["texto" => "Control de permisos", "link" => "permisos/control_permisos.php"],
     ["texto" => "Investigaciones", "link" => "investigaciones/investigaciones.php"],
     ];
 

@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
-    var casos = window.sispolInvestigacionesData || [];
-    var selectedCaseId = window.sispolSelectedCaseId || "";
+    var informes = window.sispolInvestigacionesData || [];
+    var selectedEvidenceId = String(window.sispolSelectedCaseId || "");
     var q = document.getElementById("q");
     var btnBuscar = document.getElementById("btnBuscar");
     var caseList = document.getElementById("caseList");
@@ -11,24 +11,26 @@ document.addEventListener("DOMContentLoaded", function () {
     var resumenTitulo = document.getElementById("resumenTitulo");
     var resumenFecha = document.getElementById("resumenFecha");
     var resumenAgente = document.getElementById("resumenAgente");
+    var resumenInforme = document.getElementById("resumenInforme");
     var resumenDescripcion = document.getElementById("resumenDescripcion");
-    var resumenPruebas = document.getElementById("resumenPruebas");
-    var resumenImagenes = document.getElementById("resumenImagenes");
+    var itemsList = document.getElementById("itemsList");
     var timelineList = document.getElementById("timelineList");
-    var btnActualizarCaso = document.getElementById("btnActualizarCaso");
-    var casoActualId = selectedCaseId || null;
+    var evidenceActualId = selectedEvidenceId || null;
     var searchTimer = null;
 
-    if (!q || !btnBuscar || !caseList || !searchStatus || !resumenId || !timelineList) {
-        return;
-    }
+    if (!q || !btnBuscar || !caseList || !searchStatus || !resumenId || !resumenInforme || !itemsList || !timelineList) return;
 
     function normalizar(valor) {
-        return (valor || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+        return String(valor || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
     }
 
-    function setSearchStatus(texto, tipo) {
-        searchStatus.textContent = texto;
+    function texto(valor, fallback) {
+        var result = String(valor == null ? "" : valor).trim();
+        return result === "" ? (fallback || "-") : result;
+    }
+
+    function setSearchStatus(mensaje, tipo) {
+        searchStatus.textContent = mensaje;
         searchStatus.className = "status-line" + (tipo ? " " + tipo : "");
     }
 
@@ -39,109 +41,184 @@ document.addEventListener("DOMContentLoaded", function () {
         scanFlash.classList.add("run");
     }
 
+    function addData(parent, label, value) {
+        var row = document.createElement("div");
+        var name = document.createElement("span");
+        var result = document.createElement("strong");
+        name.textContent = label + ": ";
+        result.textContent = texto(value);
+        row.append(name, result);
+        parent.appendChild(row);
+    }
+
     function limpiarSeleccion() {
-        caseList.querySelectorAll(".case-card").forEach(function (card) {
-            card.classList.remove("active");
+        caseList.querySelectorAll(".case-card").forEach(function (card) { card.classList.remove("active"); });
+    }
+
+    function informesFiltrados() {
+        var query = normalizar(q.value);
+        return informes.filter(function (informe) {
+            return !query
+                || normalizar(informe.evidenciaID).includes(query)
+                || normalizar(informe.evidenciaNombre).includes(query)
+                || normalizar(informe.creadorNombre).includes(query)
+                || normalizar(informe.creadorID).includes(query);
         });
     }
 
-    function casosFiltrados() {
-        var texto = normalizar(q.value);
-        return casos.filter(function (caso) {
-            return !texto || normalizar(caso.id).includes(texto) || normalizar(caso.titulo).includes(texto);
-        });
+    function renderInformePrincipal(informe) {
+        resumenInforme.innerHTML = "";
+        [
+            ["CREADOR ID", informe.creadorID],
+            ["CREADOR", informe.creadorNombre],
+            ["FACTION ID", informe.factionID],
+            ["ESTADO", informe.estado],
+            ["PRIVADA", informe.privada],
+            ["ÚLTIMA ACTIVIDAD", informe.ultima_actividad]
+        ].forEach(function (field) { addData(resumenInforme, field[0], field[1]); });
     }
 
-    function renderTimeline(caso) {
-        timelineList.innerHTML = "";
-        if (!(caso.secciones || []).length) {
-            timelineList.innerHTML = '<div class="timeline-item"><div class="timeline-title">Sin actualizaciones</div><div class="timeline-body">Este caso aun no tiene secciones cargadas.</div></div>';
+    function renderItems(informe) {
+        itemsList.innerHTML = "";
+        if (!(informe.items || []).length) {
+            var empty = document.createElement("div");
+            empty.className = "proof-box";
+            empty.textContent = "Sin ítems asociados.";
+            itemsList.appendChild(empty);
             return;
         }
-        (caso.secciones || []).forEach(function (seccion) {
+
+        informe.items.forEach(function (item) {
+            var card = document.createElement("article");
+            card.className = "item-card";
+            var title = document.createElement("div");
+            title.className = "item-card-title";
+            title.textContent = "ÍTEM DE EVIDENCIA #" + texto(item.evidenciaItemID);
+            var data = document.createElement("div");
+            data.className = "data-list";
+            [
+                ["ID ÍTEM", item.evidenciaItemID],
+                ["REFERENCIA ITEM ID", item.referenciaItemID],
+                ["VALOR", item.itemValor],
+                ["GUARDADO POR ID", item.guardadoPorID],
+                ["GUARDADO POR", item.guardadoPorNombre],
+                ["RESPUESTA ID ASOCIADA", item.itemRespuestaID],
+                ["FECHA", item.itemFecha]
+            ].forEach(function (field) { addData(data, field[0], field[1]); });
+            card.append(title, data);
+            itemsList.appendChild(card);
+        });
+    }
+
+    function renderRespuestas(informe) {
+        timelineList.innerHTML = "";
+        if (!(informe.respuestas || []).length) {
+            var empty = document.createElement("div");
+            empty.className = "timeline-item";
+            var title = document.createElement("div");
+            title.className = "timeline-title";
+            title.textContent = "Sin respuestas registradas";
+            empty.appendChild(title);
+            timelineList.appendChild(empty);
+            return;
+        }
+
+        informe.respuestas.forEach(function (respuesta) {
             var item = document.createElement("article");
             item.className = "timeline-item";
-            item.innerHTML = '<div class="timeline-head"><div>' + seccion.fecha_hora + '</div><div>' + seccion.agente + '</div></div><div class="timeline-title">' + seccion.titulo + '</div><div class="timeline-body">' + seccion.descripcion + '</div><div class="timeline-proof">ANADIDO POR: ' + (seccion.agregado_por || seccion.agente) + '</div><div class="timeline-proof">PRUEBAS: ' + (seccion.pruebas && seccion.pruebas.trim() !== "" ? seccion.pruebas : "SIN PRUEBAS REGISTRADAS.") + '</div>';
-            if ((seccion.imagenes || []).length) { var images = document.createElement("div"); images.className = "evidence-images"; seccion.imagenes.forEach(function (url) { var link = document.createElement("a"); link.href = url; link.target = "_blank"; link.rel = "noopener"; var image = document.createElement("img"); image.src = url; image.alt = "Evidencia"; link.appendChild(image); images.appendChild(link); }); item.appendChild(images); }
+            var head = document.createElement("div");
+            head.className = "timeline-head";
+            var date = document.createElement("div");
+            date.textContent = texto(respuesta.respuestaFecha);
+            var author = document.createElement("div");
+            author.textContent = texto(respuesta.respuestaAutorNombre);
+            head.append(date, author);
+            var title = document.createElement("div");
+            title.className = "timeline-title";
+            title.textContent = "RESPUESTA #" + texto(respuesta.respuestaID);
+            var body = document.createElement("div");
+            body.className = "timeline-body";
+            body.textContent = texto(respuesta.respuestaTexto, "SIN TEXTO REGISTRADO.");
+            var data = document.createElement("div");
+            data.className = "data-list";
+            addData(data, "RESPUESTA ID", respuesta.respuestaID);
+            addData(data, "AUTOR ID", respuesta.respuestaAutorID);
+            addData(data, "AUTOR", respuesta.respuestaAutorNombre);
+            addData(data, "FECHA", respuesta.respuestaFecha);
+            item.append(head, title, body, data);
             timelineList.appendChild(item);
         });
     }
 
-    function mostrarCaso(id) {
-        var caso = casos.find(function (item) { return item.id === id; });
-        if (!caso) return;
-        casoActualId = caso.id;
-        if (btnActualizarCaso) btnActualizarCaso.href = "./actualizar_investigacion.php?case=" + encodeURIComponent(caso.id);
-        resumenId.textContent = caso.id;
-        resumenTitulo.textContent = caso.titulo;
-        resumenFecha.textContent = caso.fecha_hora;
-        resumenAgente.textContent = caso.agente;
-        resumenDescripcion.textContent = caso.descripcion;
-        resumenPruebas.textContent = caso.pruebas && caso.pruebas.trim() !== "" ? caso.pruebas : "Sin pruebas registradas.";
-        if (resumenImagenes) { resumenImagenes.innerHTML = ""; (caso.imagenes || []).forEach(function (url) { var link = document.createElement("a"); link.href = url; link.target = "_blank"; link.rel = "noopener"; var image = document.createElement("img"); image.src = url; image.alt = "Evidencia"; link.appendChild(image); resumenImagenes.appendChild(link); }); }
-        renderTimeline(caso);
+    function mostrarInforme(id) {
+        var informe = informes.find(function (item) { return String(item.evidenciaID) === String(id); });
+        if (!informe) return;
+        evidenceActualId = String(informe.evidenciaID);
+        resumenId.textContent = texto(informe.evidenciaID);
+        resumenTitulo.textContent = texto(informe.evidenciaNombre);
+        resumenFecha.textContent = texto(informe.fecha_creacion);
+        resumenAgente.textContent = texto(informe.creadorNombre);
+        resumenDescripcion.textContent = texto(informe.descripcion, "SIN DESCRIPCIÓN REGISTRADA.");
+        renderInformePrincipal(informe);
+        renderItems(informe);
+        renderRespuestas(informe);
         timelineList.scrollTop = 0;
     }
 
     function renderListado(lista) {
         caseList.innerHTML = "";
-        limpiarSeleccion();
         if (!lista.length) {
             emptyState.style.display = "block";
-            setSearchStatus("No hay registros", "error");
+            setSearchStatus("No hay informes que coincidan con la consulta.", "error");
             return;
         }
         emptyState.style.display = "none";
-        lista.forEach(function (caso) {
+        lista.forEach(function (informe) {
             var card = document.createElement("article");
             card.className = "case-card";
-            card.dataset.id = caso.id;
-            card.innerHTML = '<div class="case-id">' + caso.id + '</div><div class="case-title">' + caso.titulo + '</div><div class="case-meta"><div>FECHA: ' + caso.fecha_hora + '</div><div>AGENTE: ' + caso.agente + '</div></div>';
+            card.dataset.id = String(informe.evidenciaID);
+            var id = document.createElement("div");
+            id.className = "case-id";
+            id.textContent = "EVIDENCIA #" + texto(informe.evidenciaID);
+            var title = document.createElement("div");
+            title.className = "case-title";
+            title.textContent = texto(informe.evidenciaNombre, "SIN NOMBRE");
+            var meta = document.createElement("div");
+            meta.className = "case-meta";
+            ["CREADOR: " + texto(informe.creadorNombre), "ESTADO: " + texto(informe.estado), "ACTIVIDAD: " + texto(informe.ultima_actividad)].forEach(function (line) {
+                var field = document.createElement("div");
+                field.textContent = line;
+                meta.appendChild(field);
+            });
+            card.append(id, title, meta);
             card.addEventListener("click", function () {
                 limpiarSeleccion();
                 card.classList.add("active");
-                mostrarCaso(caso.id);
+                mostrarInforme(informe.evidenciaID);
             });
             caseList.appendChild(card);
         });
-        var activa = casoActualId ? caseList.querySelector('.case-card[data-id="' + casoActualId + '"]') : null;
-        if (activa) activa.classList.add("active");
-        setSearchStatus("Casos visibles: " + lista.length, "success");
+        var active = evidenceActualId ? caseList.querySelector('.case-card[data-id="' + CSS.escape(String(evidenceActualId)) + '"]') : null;
+        if (active) active.classList.add("active");
+        setSearchStatus("Informes visibles: " + lista.length, "success");
     }
 
     function buscar() {
-        var texto = normalizar(q.value);
         if (searchTimer) clearTimeout(searchTimer);
         pulseFlash();
-        setSearchStatus(texto ? "Escaneando expedientes internos..." : "Escaneando archivo completo de investigaciones...", "");
-        searchTimer = setTimeout(function () {
-            if (!texto) {
-                if (btnActualizarCaso) btnActualizarCaso.href = "./actualizar_investigacion.php";
-    renderListado(casos);
-                setSearchStatus("Mostrando todos los casos: " + casos.length, "");
-                return;
-            }
-            renderListado(casosFiltrados());
-        }, 320);
+        setSearchStatus("Consultando archivo operativo de evidencias...", "");
+        searchTimer = setTimeout(function () { renderListado(informesFiltrados()); }, 260);
     }
 
     btnBuscar.addEventListener("click", buscar);
     q.addEventListener("keydown", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            buscar();
-        }
+        if (event.key === "Enter") { event.preventDefault(); buscar(); }
     });
 
-    if (btnActualizarCaso) btnActualizarCaso.href = "./actualizar_investigacion.php";
-    renderListado(casos);
-    if (casos.length) {
-        mostrarCaso(casoActualId || casos[0].id);
-        var activa = caseList.querySelector('.case-card[data-id="' + (casoActualId || casos[0].id) + '"]') || caseList.querySelector(".case-card");
-        if (activa) activa.classList.add("active");
+    renderListado(informes);
+    if (informes.length) {
+        mostrarInforme(evidenceActualId || informes[0].evidenciaID);
+        var active = caseList.querySelector('.case-card[data-id="' + CSS.escape(String(evidenceActualId || informes[0].evidenciaID)) + '"]') || caseList.querySelector(".case-card");
+        if (active) active.classList.add("active");
     }
 });
-
-
-
-

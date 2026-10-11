@@ -9,13 +9,11 @@ if (!isset($_SESSION['usuario'])) {
 $nombreUsuario = strtoupper(trim($_SESSION['usuario'] ?? 'USUARIO'));
 $selectedCaseId = strtoupper(trim((string) ($_GET['selected'] ?? '')));
 
-require_once __DIR__ . '/../lib/investigations.php';
-require_once __DIR__ . '/../interno/access_control.php';
-$puedeGestionarCaso = sispol_puede_gestionar_multas($_SESSION['rango'] ?? '');
+require_once __DIR__ . '/../lib/mysql_evidences.php';
 
-// Los expedientes se cargan exclusivamente desde Firebase. No se conservan
-// casos de demostración para no mezclarlos con los registros operativos.
-try { $investigaciones = rangers_fetch_investigations(); } catch (Throwable $exception) { $investigaciones = []; }
+// Este módulo es sólo de lectura y refleja exclusivamente los informes
+// disponibles en la base de datos operativa de evidencias.
+try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $exception) { $investigaciones = []; }
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -44,7 +42,7 @@ try { $investigaciones = rangers_fetch_investigations(); } catch (Throwable $exc
         .dotted{ height:10px; background:repeating-linear-gradient(to right, var(--green) 0 8px, transparent 8px 16px); }
         .panel{ background:repeating-linear-gradient(-45deg, rgba(163,214,63,.08) 0 12px, rgba(163,214,63,.03) 12px 24px); border:1px solid rgba(163,214,63,.18); padding:14px 16px; min-height:0; }
         .section-title{ font-size:20px; font-weight:bold; text-transform:uppercase; margin-bottom:10px; }
-        .search-form{ display:grid; grid-template-columns:180px minmax(0, 1fr) 160px 240px; gap:10px; align-items:end; }
+        .search-form{ display:grid; grid-template-columns:180px minmax(0, 1fr) 160px; gap:10px; align-items:end; }
         .main-grid{ flex:1 1 auto; min-height:0; display:grid; grid-template-columns:minmax(360px,.95fr) minmax(0,1.3fr); gap:16px; }
         .left-col,.right-col,.case-shell,.detail-panel{ min-height:0; display:flex; flex-direction:column; gap:10px; }
         .field{ display:flex; flex-direction:column; gap:5px; min-width:0; }
@@ -67,6 +65,9 @@ try { $investigaciones = rangers_fetch_investigations(); } catch (Throwable $exc
         .summary-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; font-size:15px; font-weight:bold; text-transform:uppercase; }
         .summary-grid span{ color:var(--white); }
         .description-box,.proof-box,.timeline{ background:rgba(0,0,0,.55); border:1px solid rgba(163,214,63,.16); padding:12px; }
+        .data-list{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px 14px; background:rgba(0,0,0,.55); border:1px solid rgba(163,214,63,.16); padding:12px; font-size:13px; line-height:1.35; text-transform:uppercase; }
+        .data-list div{ min-width:0; overflow-wrap:anywhere; }.data-list span{ color:var(--white); font-weight:bold; }.data-list strong{ color:var(--green-soft); }
+        .items-list{ display:flex; flex-direction:column; gap:8px; }.item-card{ border-left:4px solid var(--green); background:rgba(0,0,0,.72); padding:10px 12px; }.item-card-title{ margin-bottom:8px; font-size:15px; font-weight:bold; text-transform:uppercase; }
         .evidence-images{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.evidence-images img{width:100%;height:110px;object-fit:cover;border:1px solid rgba(163,214,63,.35);background:#000}
         .description-box,.proof-box,.timeline-body,.timeline-proof{ font-size:14px; line-height:1.45; text-transform:uppercase; color:var(--green-soft); white-space:pre-wrap; }
         .timeline{ display:flex; flex-direction:column; gap:10px; min-height:180px; max-height:320px; overflow:auto; }
@@ -79,7 +80,7 @@ try { $investigaciones = rangers_fetch_investigations(); } catch (Throwable $exc
         .footer{ display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
         .btn-back{ width:auto; min-width:160px; }
         .case-file{ font-size:18px; font-weight:bold; text-transform:uppercase; color:var(--white); }
-        @media (max-width:1180px){ .main-grid,.search-form,.summary-grid{ grid-template-columns:1fr; } }
+        @media (max-width:1180px){ .main-grid,.search-form,.summary-grid,.data-list{ grid-template-columns:1fr; } }
         @media (max-width:860px){ html,body{ overflow:auto; } .screen{ height:auto; min-height:100vh; padding:10px 12px 8px; } .container{ height:auto; } .detail-panel{ overflow:visible; } .detail-scroll{ overflow:visible; padding-right:0; } }
     </style>
 </head>
@@ -98,34 +99,31 @@ try { $investigaciones = rangers_fetch_investigations(); } catch (Throwable $exc
         <div class="top-bar">Investigaciones</div>
         <div class="info">
             <div>Usuario: <span style="color:var(--white)"><?php echo htmlspecialchars($nombreUsuario); ?></span></div>
-            <div>Modulo: <span style="color:var(--white)">Gestion de casos e investigaciones</span></div>
+            <div>Modulo: <span style="color:var(--white)">Consulta de informes de evidencia</span></div>
         </div>
         <div class="dotted"></div>
         <div class="panel">
-            <div class="section-title">Menu de casos</div>
+            <div class="section-title">Consulta de evidencias</div>
             <div class="search-form">
                 <div class="field">
                     <label for="tipoBusqueda">Buscar por</label>
-                    <input type="text" id="tipoBusqueda" value="ID O TITULO" disabled>
+                    <input type="text" id="tipoBusqueda" value="ID O NOMBRE" disabled>
                 </div>
                 <div class="field">
                     <label for="q">Consulta</label>
-                    <input type="text" id="q" placeholder="ESCRIBE ID O TITULO DEL CASO">
+                    <input type="text" id="q" placeholder="ESCRIBE ID, NOMBRE O CREADOR">
                 </div>
                 <div class="field">
-                    <button type="button" class="btn" id="btnBuscar">Buscar caso</button>
-                </div>
-                <div class="field">
-                    <a href="./nueva_investigacion.php" class="btn">Crear nueva investigacion</a>
+                    <button type="button" class="btn" id="btnBuscar">Buscar evidencia</button>
                 </div>
             </div>
-            <div class="status-line" id="searchStatus">Mostrando todos los casos cargados.</div>
+            <div class="status-line" id="searchStatus">Mostrando todos los informes operativos.</div>
         </div>
         <div class="main-grid">
             <div class="left-col">
                 <div class="dotted"></div>
                 <div class="panel case-shell">
-                    <div class="section-title">Listado de casos</div>
+                    <div class="section-title">Informes de evidencia</div>
                     <div class="case-list" id="caseList"></div>
                     <div class="empty-state" id="emptyState" style="display:none;">No hay registros</div>
                 </div>
@@ -133,35 +131,36 @@ try { $investigaciones = rangers_fetch_investigations(); } catch (Throwable $exc
             <div class="right-col">
                 <div class="dotted"></div>
                 <div class="panel detail-panel">
-                    <div class="section-title">Ficha de investigacion</div>
+                    <div class="section-title">Ficha de evidencia</div>
                     <div class="detail-scroll">
                         <div class="summary-grid">
-                            <div><span>ID:</span> <strong id="resumenId">-</strong></div>
-                            <div><span>Titulo:</span> <strong id="resumenTitulo">-</strong></div>
-                            <div><span>Fecha y hora:</span> <strong id="resumenFecha">-</strong></div>
-                            <div><span>Agente a cargo:</span> <strong id="resumenAgente">-</strong></div>
+                            <div><span>ID de evidencia:</span> <strong id="resumenId">-</strong></div>
+                            <div><span>Nombre:</span> <strong id="resumenTitulo">-</strong></div>
+                            <div><span>Fecha de creación:</span> <strong id="resumenFecha">-</strong></div>
+                            <div><span>Creador:</span> <strong id="resumenAgente">-</strong></div>
+                        </div>
+                        <div class="detail-section">
+                            <div class="section-title" style="font-size:16px; margin-bottom:0;">Datos del informe</div>
+                            <div class="data-list" id="resumenInforme"></div>
                         </div>
                         <div class="detail-section">
                             <div class="section-title" style="font-size:16px; margin-bottom:0;">Descripcion</div>
                             <div class="description-box" id="resumenDescripcion">Selecciona un caso para ver la descripcion.</div>
                         </div>
                         <div class="detail-section">
-                            <div class="section-title" style="font-size:16px; margin-bottom:0;">Pruebas</div>
-                            <div class="proof-box" id="resumenPruebas">Sin pruebas registradas.</div>
-                            <div class="evidence-images" id="resumenImagenes"></div>
+                            <div class="section-title" style="font-size:16px; margin-bottom:0;">Ítems asociados</div>
+                            <div class="items-list" id="itemsList"><div class="proof-box">Sin ítems registrados.</div></div>
                         </div>
                         <div class="detail-section">
-                            <div class="section-title" style="font-size:16px; margin-bottom:0;">Actualizaciones del caso</div>
+                            <div class="section-title" style="font-size:16px; margin-bottom:0;">Respuestas</div>
                             <div class="timeline" id="timelineList">
                                 <div class="timeline-item">
-                                    <div class="timeline-title">Sin investigacion seleccionada</div>
-                                    <div class="timeline-body">Selecciona un caso desde el menu izquierdo.</div>
+                                    <div class="timeline-title">Sin evidencia seleccionada</div>
+                                    <div class="timeline-body">Selecciona un informe desde el menú izquierdo.</div>
                                 </div>
                             </div>
                         </div>
-                        <?php if ($puedeGestionarCaso): ?><div class="detail-actions">
-                            <a href="./actualizar_investigacion.php" class="btn" id="btnActualizarCaso">Agregar actualizacion</a>
-                        </div><?php else: ?><div class="status-line">Solo Inspector o superior puede comentar o cerrar casos.</div><?php endif; ?>
+                        <div class="status-line">MÓDULO DE CONSULTA · INFORMACIÓN DE SÓLO LECTURA.</div>
                     </div>
                 </div>
             </div>
@@ -176,9 +175,8 @@ try { $investigaciones = rangers_fetch_investigations(); } catch (Throwable $exc
 <script>
 window.sispolInvestigacionesData = <?php echo json_encode($investigaciones, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 window.sispolSelectedCaseId = <?php echo json_encode($selectedCaseId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
-window.sispolPuedeGestionarCaso = <?php echo $puedeGestionarCaso ? 'true' : 'false'; ?>;
 </script>
-<script src="../js/investigaciones_db.js?v=<?php echo (int) filemtime(__DIR__ . '/../js/investigaciones_db.js'); ?>"></script>
+<script src="../js/investigaciones_db.js?v=evidence-query-1"></script>
 <script src="../loader_sispol.js"></script>
 </body>
 </html>

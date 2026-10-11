@@ -7,7 +7,43 @@ document.addEventListener("DOMContentLoaded", () => {
     const loadingLine = document.getElementById("loadingLine");
     const loadingSpinner = document.getElementById("loadingSpinner");
 
-    usuario.focus();
+    const bootSequence = document.getElementById("bootSequence");
+    const bootLine = document.getElementById("bootLine");
+    const bootStatus = document.getElementById("bootStatus");
+    const bootProgress = document.getElementById("bootProgress");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function finishBoot() {
+        if (!bootSequence || bootSequence.classList.contains("is-hidden")) {
+            return;
+        }
+
+        bootSequence.classList.add("is-hidden");
+        window.setTimeout(() => bootSequence.remove(), 320);
+        usuario.focus();
+    }
+
+    if (bootSequence && bootLine && bootStatus && bootProgress) {
+        const steps = [
+            ["> INICIANDO TERMINAL", "CARGANDO INTERFAZ SEGURA...", 28],
+            ["> VALIDANDO PROTOCOLOS", "ESTABLECIENDO CONEXIÓN LOCAL...", 62],
+            ["> SISTEMA LISTO", "ACCESO RESTRINGIDO · IDENTIFÍQUESE", 100]
+        ];
+        const stepDelay = reduceMotion ? 0 : 270;
+
+        steps.forEach(([line, status, progress], index) => {
+            window.setTimeout(() => {
+                bootLine.textContent = line;
+                bootStatus.textContent = status;
+                bootProgress.style.width = `${progress}%`;
+            }, index * stepDelay);
+        });
+
+        window.setTimeout(finishBoot, reduceMotion ? 30 : 1050);
+        window.setTimeout(finishBoot, 1800);
+    } else {
+        usuario.focus();
+    }
 
     usuario.addEventListener("input", () => {
         usuario.value = usuario.value.toUpperCase();

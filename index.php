@@ -21,6 +21,16 @@ unset($_SESSION['login_error']);
 </head>
 <body>
 
+<div class="boot-sequence" id="bootSequence" aria-hidden="true">
+    <div class="boot-sequence__glow"></div>
+    <div class="boot-sequence__panel">
+        <p class="boot-sequence__brand">RANGERS // SISPOL</p>
+        <p class="boot-sequence__line" id="bootLine">&gt; INICIANDO TERMINAL</p>
+        <div class="boot-sequence__progress" aria-hidden="true"><span id="bootProgress"></span></div>
+        <p class="boot-sequence__status" id="bootStatus">CARGANDO INTERFAZ SEGURA...</p>
+    </div>
+</div>
+
 <div class="screen">
     <div class="wrapper">
 
@@ -67,6 +77,6 @@ unset($_SESSION['login_error']);
     </div>
 </div>
 
-<script src="script.js"></script>
+<script src="script.js?v=<?php echo (int) filemtime(__DIR__ . '/script.js'); ?>"></script>
 </body>
 </html>

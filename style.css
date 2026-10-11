@@ -234,6 +234,120 @@ body::after{
     opacity: 0.12;
 }
 
+.boot-sequence{
+    position: fixed;
+    z-index: 20;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    overflow: hidden;
+    background: #000;
+    color: var(--green);
+    transition: opacity 280ms ease, visibility 280ms ease;
+}
+
+.boot-sequence::before{
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.25;
+    background: repeating-linear-gradient(
+        to bottom,
+        rgba(183, 217, 75, 0.12) 0 1px,
+        transparent 1px 4px
+    );
+    pointer-events: none;
+}
+
+.boot-sequence.is-hidden{
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.boot-sequence__glow{
+    position: absolute;
+    width: min(130vw, 1450px);
+    height: 2px;
+    background: var(--green);
+    box-shadow: 0 0 12px 5px rgba(183, 217, 75, 0.75), 0 0 80px 24px rgba(183, 217, 75, 0.2);
+    animation: boot-screen-on 360ms ease-out both;
+}
+
+.boot-sequence__panel{
+    position: relative;
+    z-index: 1;
+    width: min(100%, 690px);
+    padding: clamp(16px, 3vw, 28px);
+    border: 2px solid rgba(183, 217, 75, 0.75);
+    background: rgba(0, 0, 0, 0.9);
+    box-shadow: 0 0 28px rgba(183, 217, 75, 0.18);
+    font-size: clamp(12px, 1vw + 0.35vh, 18px);
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    text-align: left;
+    animation: boot-panel-in 300ms 140ms ease-out both;
+}
+
+.boot-sequence__brand,
+.boot-sequence__line,
+.boot-sequence__status{
+    margin: 0;
+}
+
+.boot-sequence__brand{
+    color: var(--green-soft);
+    margin-bottom: 15px;
+}
+
+.boot-sequence__line{
+    min-height: 1.4em;
+}
+
+.boot-sequence__line::after{
+    content: "_";
+    margin-left: 4px;
+    animation: boot-cursor 700ms steps(1) infinite;
+}
+
+.boot-sequence__progress{
+    height: 7px;
+    margin: 18px 0 12px;
+    overflow: hidden;
+    border: 1px solid rgba(183, 217, 75, 0.8);
+}
+
+.boot-sequence__progress span{
+    display: block;
+    width: 0;
+    height: 100%;
+    background: var(--green);
+    box-shadow: 0 0 10px var(--green);
+    transition: width 180ms linear;
+}
+
+.boot-sequence__status{
+    min-height: 1.4em;
+    color: var(--green-soft);
+    font-size: 0.85em;
+}
+
+@keyframes boot-screen-on{
+    0%{ transform: scaleY(0.01); opacity: 0; }
+    55%{ transform: scaleY(1); opacity: 1; }
+    100%{ transform: scaleY(1); opacity: 0; }
+}
+
+@keyframes boot-panel-in{
+    from{ opacity: 0; transform: translateY(10px); }
+    to{ opacity: 1; transform: translateY(0); }
+}
+
+@keyframes boot-cursor{
+    50%{ opacity: 0; }
+}
+
 .logo-img{
     width: clamp(120px, 20vh, 260px);
     max-width: 44%;
@@ -363,5 +477,18 @@ body::after{
 
     .bottom-line{
         height: 4px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce){
+    .boot-sequence,
+    .boot-sequence__progress span{
+        transition-duration: 1ms;
+    }
+
+    .boot-sequence__glow,
+    .boot-sequence__panel,
+    .boot-sequence__line::after{
+        animation: none;
     }
 }

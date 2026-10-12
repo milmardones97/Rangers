@@ -46,17 +46,18 @@ try {
                 $characterId = (string) ($character['characterID'] ?? '');
                 $sourceUserId = (string) ($character['userID'] ?? '');
                 $name = strtoupper(trim((string) ($character['characterName'] ?? '')));
+                $jailed = !empty($character['jailed']);
                 $profile = null;
                 foreach ($stored as $item) {
                     if (($characterId !== '' && (string) ($item['character_id'] ?? '') === $characterId) || $item['nombre'] === $name) { $profile = $item; break; }
                 }
-                if ($profile !== null) { $profile['multas_count'] = rangers_mysql_character_fine_count($characterId, $name); $profile['dni'] = rangers_criminal_dni(['nombre' => $name, 'character_id' => $characterId, 'source_user_id' => $sourceUserId]); $profile['source_user_id'] = $sourceUserId; }
+                if ($profile !== null) { $profile['multas_count'] = rangers_mysql_character_fine_count($characterId, $name); $profile['dni'] = rangers_criminal_dni(['nombre' => $name, 'character_id' => $characterId, 'source_user_id' => $sourceUserId]); $profile['source_user_id'] = $sourceUserId; $profile['jailed'] = $jailed; if ($jailed) $profile['status'] = 'EN PRISION'; }
                 $results[] = $profile ?? [
                     'id' => 'CHAR-' . $characterId,
                     'character_id' => $characterId,
                     'source_user_id' => $sourceUserId,
                     'nombre' => $name,
-                    'dni' => '', 'edad' => null, 'foto' => '', 'nacionalidad' => '', 'status' => 'SIN PERFIL SISPOL',
+                    'dni' => '', 'edad' => null, 'foto' => '', 'nacionalidad' => '', 'status' => $jailed ? 'EN PRISION' : 'SIN PERFIL SISPOL', 'jailed' => $jailed,
                     'multas_count' => rangers_mysql_character_fine_count($characterId, $name), 'crimenes_count' => 0, 'crimenes' => [], 'adn' => false, 'huella_dactilar' => false,
                     'referencias' => rangers_criminal_sispol_references($name), 'unregistered' => true,
                 ];

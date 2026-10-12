@@ -10,10 +10,34 @@ function rangers_search_mysql_characters(string $query, string $field = 'nombre'
         ? 'CAST(characterID AS CHAR) LIKE :query'
         : 'UPPER(characterName) LIKE UPPER(:query)';
     $statement = rangers_mysql_general_fines_connection()->prepare(
-        "SELECT characterID, userID, characterName FROM characters WHERE {$where} ORDER BY characterName ASC LIMIT 50"
+        "SELECT characterID, userID, characterName, COALESCE(jailed, 0) AS jailed FROM characters WHERE {$where} ORDER BY characterName ASC LIMIT 50"
     );
     $statement->execute(['query' => '%' . $query . '%']);
     return $statement->fetchAll();
+}
+
+function rangers_mysql_character_jail_states(array $characterIds): array
+{
+    $characterIds = array_values(array_unique(array_filter(array_map(
+        fn($id) => preg_replace('/\D+/', '', (string) $id),
+        $characterIds
+    ), fn($id) => $id !== '')));
+    if ($characterIds === []) return [];
+
+    $params = [];
+    $placeholders = [];
+    foreach ($characterIds as $index => $characterId) {
+        $key = ':character_' . $index;
+        $placeholders[] = $key;
+        $params[$key] = $characterId;
+    }
+    $statement = rangers_mysql_general_fines_connection()->prepare(
+        'SELECT characterID, COALESCE(jailed, 0) AS jailed FROM characters WHERE characterID IN (' . implode(', ', $placeholders) . ')'
+    );
+    $statement->execute($params);
+    $states = [];
+    foreach ($statement->fetchAll() as $row) $states[(string) ($row['characterID'] ?? '')] = !empty($row['jailed']);
+    return $states;
 }
 
 function rangers_mysql_character_fine_count(string $characterId, string $characterName = ''): int

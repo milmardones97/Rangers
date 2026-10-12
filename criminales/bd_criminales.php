@@ -32,6 +32,7 @@ $criminales = [];
             --green-panel:#22320b;
             --white:#f2f2f2;
             --red:#ff4949;
+            --prison:#ffb52e;
             --shadow:rgba(183,217,75,.20);
         }
 
@@ -503,6 +504,10 @@ $criminales = [];
 
         .scan-card.wanted .scan-name{ color:#ff8b8b; }
         .wanted-status{ color:var(--red)!important; text-shadow:0 0 8px rgba(255,73,73,.35); }
+        .scan-card.prison{ border-color:var(--prison); box-shadow:inset 4px 0 0 var(--prison), 0 0 16px rgba(255,181,46,.18); }
+        .scan-card.prison .scan-name{ color:#ffe19b; }
+        .prison-status{ color:var(--prison)!important; text-shadow:0 0 9px rgba(255,181,46,.45); }
+        .status-locked{ opacity:.68; cursor:not-allowed; border-color:var(--prison)!important; color:#ffd476!important; }
         .btn-wanted{ width:auto; min-width:180px; border-color:var(--red); color:#ff9a9a; }
         .btn-wanted:hover{ background:var(--red); color:#000; }
 
@@ -867,7 +872,7 @@ $criminales = [];
 <script>
 window.sispolCriminalesData = <?php echo json_encode($criminales, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/bd_criminales_db.js?v=20261008-4"></script>
+<script src="../js/bd_criminales_db.js?v=20261012-jailed-status"></script>
 </body>
 </html>
 

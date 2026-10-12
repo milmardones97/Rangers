@@ -9,6 +9,7 @@ if (!isset($_SESSION['usuario'])) {
 $nombreUsuario = strtoupper(trim($_SESSION['usuario'] ?? 'USUARIO'));
 
 require_once __DIR__ . '/../lib/criminals.php';
+$catalogoArticulos = require __DIR__ . '/../lib/criminal_articles.php';
 
 $criminales = [];
 
@@ -612,6 +613,71 @@ $criminales = [];
         }
 
         .crime-form .full{ grid-column:1 / -1; }
+        .article-picker{
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:10px;
+            max-height:250px;
+            overflow:auto;
+            padding:10px;
+            border:1px solid var(--green-dark);
+            background:#050805;
+        }
+        .article-group{ min-width:0; }
+        .article-group-title{
+            display:block;
+            margin-bottom:7px;
+            color:var(--green);
+            font-size:13px;
+            font-weight:bold;
+            text-transform:uppercase;
+        }
+        .article-option{
+            display:flex;
+            align-items:flex-start;
+            gap:7px;
+            padding:5px 4px;
+            color:var(--green-soft);
+            cursor:pointer;
+            font-size:13px;
+            line-height:1.28;
+        }
+        .article-option:hover{ background:rgba(183,217,75,.10); }
+        .article-option input{
+            appearance:none;
+            -webkit-appearance:none;
+            width:16px;
+            height:16px;
+            flex:0 0 16px;
+            margin:1px 0 0;
+            border:2px solid var(--green);
+            background:#000;
+            cursor:pointer;
+            position:relative;
+        }
+        .article-option input:checked{ background:var(--green-strong); }
+        .article-option input:checked::after{
+            content:"✓";
+            position:absolute;
+            inset:-3px 0 0;
+            color:#000;
+            font-size:15px;
+            font-weight:bold;
+            line-height:16px;
+            text-align:center;
+        }
+        .article-option input:disabled{ cursor:default; opacity:.55; }
+        .article-selection{
+            min-height:34px;
+            margin-top:8px;
+            padding:8px 10px;
+            border-left:3px solid var(--green-dark);
+            background:#080b05;
+            color:var(--green-soft);
+            font-size:13px;
+            font-weight:bold;
+            line-height:1.4;
+        }
         .severity-options{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; min-height:42px; color:var(--green-soft); font-weight:bold; }
         .severity-options label{ display:flex; align-items:center; gap:6px; color:var(--green-soft); cursor:pointer; }
         .severity-options input{ width:17px; height:17px; accent-color:var(--green-strong); }
@@ -662,6 +728,8 @@ $criminales = [];
             .crime-form{
                 grid-template-columns:1fr;
             }
+
+            .article-picker{ grid-template-columns:1fr; }
 
             .profile-summary{
                 grid-template-columns:1fr;
@@ -833,9 +901,14 @@ $criminales = [];
                             <label for="agentesCrimen">Agente(s)</label>
                             <input type="text" id="agentesCrimen" placeholder="Agentes intervinientes..." disabled>
                         </div>
-                        <div class="field">
-                            <label for="nuevoCrimen">Delitos</label>
-                            <input type="text" id="nuevoCrimen" placeholder="Delito registrado..." disabled>
+                        <div class="field full">
+                            <label>Art&iacute;culos aplicables <span class="muted">(puedes seleccionar varios)</span></label>
+                            <div class="article-picker" id="articlePicker" aria-label="Artículos aplicables"></div>
+                            <div class="article-selection" id="articleSelection">SIN ART&Iacute;CULOS SELECCIONADOS.</div>
+                        </div>
+                        <div class="field full">
+                            <label for="nuevoCrimen">Delito no definido <span class="muted">(opcional)</span></label>
+                            <input type="text" id="nuevoCrimen" placeholder="Escribe un delito no incluido en el catálogo..." disabled>
                         </div>
                         <div class="field">
                             <label for="nuevaSancion">Sentencia</label>
@@ -871,8 +944,9 @@ $criminales = [];
 
 <script>
 window.sispolCriminalesData = <?php echo json_encode($criminales, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+window.sispolCriminalArticles = <?php echo json_encode($catalogoArticulos, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/bd_criminales_db.js?v=20261012-jailed-status"></script>
+<script src="../js/bd_criminales_db.js?v=20261012-article-catalog"></script>
 </body>
 </html>
 

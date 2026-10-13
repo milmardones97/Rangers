@@ -17,6 +17,9 @@ document.addEventListener("DOMContentLoaded", function () {
     var timelineList = document.getElementById("timelineList");
     var evidenceActualId = selectedEvidenceId || null;
     var searchTimer = null;
+    var itemCatalog = window.sispolEvidenceItemCatalog || {};
+    var weaponCatalog = window.sispolEvidenceWeaponCatalog || {};
+    var bodyParts = { 3: "TORSO", 4: "TRASERO", 5: "BRAZO IZQUIERDO", 6: "BRAZO DERECHO", 7: "PIERNA IZQUIERDA", 8: "PIERNA DERECHA", 9: "CABEZA" };
 
     if (!q || !btnBuscar || !caseList || !searchStatus || !resumenId || !resumenInforme || !itemsList || !timelineList) return;
 
@@ -27,6 +30,56 @@ document.addEventListener("DOMContentLoaded", function () {
     function texto(valor, fallback) {
         var result = String(valor == null ? "" : valor).trim();
         return result === "" ? (fallback || "-") : result;
+    }
+
+    function textoForense(valor) {
+        return texto(valor, "").replace(/\\r\\n|\\n|\\r/g, "\n").replace(/\r\n|\r/g, "\n");
+    }
+
+    function etiquetaCampoForense(key) {
+        var labels = {
+            cantidad: "CANTIDAD", calibre: "CALIBRE", tipo: "TIPO", casquillos: "CASQUILLOS",
+            whetstone: "LUGAR DE ORIGEN", origen: "ORIGEN", analizado: "ANALIZADO",
+            bodypart: "ZONA DEL CUERPO", bodyparts: "ZONAS DEL CUERPO",
+            victimacharid: "VÍCTIMA (CHARACTER ID)", victimcharid: "VÍCTIMA (CHARACTER ID)"
+        };
+        return labels[key] || key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/_/g, " ").toUpperCase();
+    }
+
+    function nombreArma(record) {
+        var weaponId = record.weaponid == null ? "" : String(record.weaponid);
+        var itemId = record.armaitemid == null ? "" : String(record.armaitemid);
+        return weaponCatalog[weaponId] || itemCatalog[itemId] || "ARMA SIN IDENTIFICAR";
+    }
+
+    function zonaCuerpo(valor) {
+        if (Array.isArray(valor)) return valor.map(zonaCuerpo).join(", ");
+        return bodyParts[Number(valor)] || "ZONA " + texto(valor);
+    }
+
+    function formatoMaterial(valor) {
+        var raw = textoForense(valor);
+        var parsed = null;
+        try { parsed = JSON.parse(raw); } catch (error) { parsed = null; }
+        if (Array.isArray(parsed) && parsed.every(function (entry) { return entry && typeof entry === "object" && !Array.isArray(entry); })) {
+            var fields = [];
+            parsed.forEach(function (entry) {
+                var record = {};
+                Object.keys(entry).forEach(function (key) { record[String(key).toLowerCase()] = entry[key]; });
+                if (record.weaponid != null || record.armaitemid != null) fields.push(["ARMA", nombreArma(record)]);
+                Object.keys(record).forEach(function (key) {
+                    if (["weaponid", "armaitemid", "itemarmaid", "informeid", "fecharecogida"].includes(key)) return;
+                    var value = record[key];
+                    if (key === "analizado") value = value === true || String(value).toLowerCase() === "true" || String(value) === "1" ? "SÍ" : "NO";
+                    if (key === "bodypart" || key === "bodyparts") value = zonaCuerpo(value);
+                    if (typeof value === "object") value = Array.isArray(value) ? value.join(", ") : JSON.stringify(value);
+                    fields.push([etiquetaCampoForense(key), value]);
+                });
+            });
+            return { fields: fields, narrative: "" };
+        }
+        if (Array.isArray(parsed)) return { fields: [], narrative: parsed.map(function (part) { return textoForense(part); }).join("\n") };
+        return { fields: [], narrative: raw };
     }
 
     function setSearchStatus(mensaje, tipo) {
@@ -97,13 +150,18 @@ document.addEventListener("DOMContentLoaded", function () {
             title.textContent = "MATERIAL: " + itemName;
             var data = document.createElement("div");
             data.className = "data-list";
-            [
-                ["MATERIAL", itemName],
-                ["DESCRIPCIÓN", item.itemValor],
+            var detail = formatoMaterial(item.itemValor);
+            [["MATERIAL", itemName]].concat(detail.fields).concat([
                 ["GUARDADO POR", item.guardadoPorNombre],
                 ["FECHA", item.itemFecha]
-            ].forEach(function (field) { addData(data, field[0], field[1]); });
+            ]).forEach(function (field) { addData(data, field[0], field[1]); });
             card.append(title, data);
+            if (detail.narrative) {
+                var narrative = document.createElement("div");
+                narrative.className = "proof-box";
+                narrative.textContent = detail.narrative;
+                card.appendChild(narrative);
+            }
             itemsList.appendChild(card);
         });
     }

@@ -14,6 +14,8 @@ require_once __DIR__ . '/../lib/mysql_evidences.php';
 // Este módulo es sólo de lectura y refleja exclusivamente los informes
 // disponibles en la base de datos operativa de evidencias.
 try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $exception) { $investigaciones = []; }
+$catalogoItemsEvidencia = rangers_evidence_item_catalog();
+$catalogoArmasEvidencia = require __DIR__ . '/../lib/evidence_weapon_catalog.php';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -73,7 +75,7 @@ try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $e
         .description-box,.proof-box,.timeline{ background:rgba(0,0,0,.55); border:1px solid rgba(163,214,63,.16); padding:12px; }
         .data-list{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px 14px; background:rgba(0,0,0,.55); border:1px solid rgba(163,214,63,.16); padding:12px; font-size:13px; line-height:1.35; text-transform:uppercase; }
         .data-list div{ min-width:0; overflow-wrap:anywhere; }.data-list span{ color:var(--white); font-weight:bold; }.data-list strong{ color:var(--green-soft); }
-        .items-list{ display:flex; flex-direction:column; gap:8px; }.item-card{ border-left:4px solid var(--green); background:rgba(0,0,0,.72); padding:10px 12px; }.item-card-title{ margin-bottom:8px; font-size:15px; font-weight:bold; text-transform:uppercase; }
+        .items-list{ display:flex; flex-direction:column; gap:8px; }.item-card{ border-left:4px solid var(--green); background:rgba(0,0,0,.72); padding:10px 12px; }.item-card-title{ margin-bottom:8px; font-size:15px; font-weight:bold; text-transform:uppercase; }.item-card .proof-box{ margin-top:8px; }
         .evidence-images{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.evidence-images img{width:100%;height:110px;object-fit:cover;border:1px solid rgba(163,214,63,.35);background:#000}
         .description-box,.proof-box,.timeline-body,.timeline-proof{ font-size:14px; line-height:1.45; text-transform:uppercase; color:var(--green-soft); white-space:pre-wrap; }
         .timeline{ display:flex; flex-direction:column; gap:10px; min-height:180px; max-height:320px; overflow:auto; }
@@ -201,8 +203,10 @@ try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $e
 <script>
 window.sispolInvestigacionesData = <?php echo json_encode($investigaciones, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 window.sispolSelectedCaseId = <?php echo json_encode($selectedCaseId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+window.sispolEvidenceItemCatalog = <?php echo json_encode($catalogoItemsEvidencia, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+window.sispolEvidenceWeaponCatalog = <?php echo json_encode($catalogoArmasEvidencia, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/investigaciones_db.js?v=evidence-material-labels-1"></script>
+<script src="../js/investigaciones_db.js?v=evidence-forensic-format-1"></script>
 <script src="../loader_sispol.js"></script>
 </body>
 </html>

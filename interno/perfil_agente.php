@@ -10,7 +10,9 @@ $id = trim((string) ($_GET['key'] ?? ''));
 $actorName = strtoupper(trim((string) ($_SESSION['usuario'] ?? 'USUARIO')));
 $actorRank = strtoupper(trim((string) ($_SESSION['rango'] ?? '')));
 $actor = $actorRank === '' ? $actorName : $actorName . ' · ' . $actorRank;
-$notice = ''; $error = '';
+$notice = (string) ($_SESSION['agent_profile_notice'] ?? '');
+unset($_SESSION['agent_profile_notice']);
+$error = '';
 try {
     $profile = rangers_agent_profile($id);
     if (!$profile) throw new RuntimeException('Archivo de agente no encontrado.');
@@ -28,6 +30,9 @@ try {
             rangers_add_agent_profile_update($id, (string) ($_POST['categoria'] ?? ''), (string) ($_POST['detalle'] ?? ''), $actor, (string) ($_POST['fecha'] ?? ''), $agentForNotification);
             $notice = 'ACTUALIZACIÓN REGISTRADA.';
         }
+        $_SESSION['agent_profile_notice'] = $notice;
+        header('Location: perfil_agente.php?key=' . rawurlencode($id));
+        exit;
     }
     $profile = rangers_agent_profile($id);
     if (!$profile) throw new RuntimeException('Archivo de agente no encontrado.');

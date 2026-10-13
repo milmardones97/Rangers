@@ -174,7 +174,7 @@ try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $e
                             <div class="description-box" id="resumenDescripcion">Selecciona un caso para ver la descripcion.</div>
                         </div>
                         <div class="detail-section">
-                            <div class="section-title" style="font-size:16px; margin-bottom:0;">Ítems asociados</div>
+                            <div class="section-title" style="font-size:16px; margin-bottom:0;">Material asociado</div>
                             <div class="items-list" id="itemsList"><div class="proof-box">Sin ítems registrados.</div></div>
                         </div>
                         <div class="detail-section">
@@ -202,7 +202,7 @@ try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $e
 window.sispolInvestigacionesData = <?php echo json_encode($investigaciones, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 window.sispolSelectedCaseId = <?php echo json_encode($selectedCaseId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/investigaciones_db.js?v=evidence-item-catalog-1"></script>
+<script src="../js/investigaciones_db.js?v=evidence-material-labels-1"></script>
 <script src="../loader_sispol.js"></script>
 </body>
 </html>

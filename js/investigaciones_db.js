@@ -94,16 +94,13 @@ document.addEventListener("DOMContentLoaded", function () {
             var title = document.createElement("div");
             title.className = "item-card-title";
             var itemName = texto(item.referenciaItemNombre, "ÍTEM SIN IDENTIFICAR");
-            title.textContent = "ÍTEM ASOCIADO: " + itemName;
+            title.textContent = "MATERIAL: " + itemName;
             var data = document.createElement("div");
             data.className = "data-list";
             [
-                ["ID DE REGISTRO", item.evidenciaItemID],
-                ["ÍTEM", itemName + " (ID " + texto(item.referenciaItemID) + ")"],
-                ["VALOR", item.itemValor],
-                ["GUARDADO POR ID", item.guardadoPorID],
+                ["MATERIAL", itemName],
+                ["DESCRIPCIÓN", item.itemValor],
                 ["GUARDADO POR", item.guardadoPorNombre],
-                ["RESPUESTA ID ASOCIADA", item.itemRespuestaID],
                 ["FECHA", item.itemFecha]
             ].forEach(function (field) { addData(data, field[0], field[1]); });
             card.append(title, data);

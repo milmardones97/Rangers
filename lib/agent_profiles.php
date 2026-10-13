@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/database.php';
+require_once __DIR__ . '/discord.php';
 
 function rangers_agent_profile(string $agentId): array
 {
@@ -24,7 +25,7 @@ function rangers_save_agent_decorations(string $agentId, array $decorationKeys):
     rangers_firebase_request('PUT', 'agent_decorations/' . $agentId, $selected ?: []);
 }
 
-function rangers_add_agent_profile_update(string $agentId, string $category, string $body, string $author, string $at): void
+function rangers_add_agent_profile_update(string $agentId, string $category, string $body, string $author, string $at, array $agent = []): void
 {
     $allowed = ['ACTIVO', 'SANCIÓN', 'CONDECORACIÓN', 'ASCENSO', 'DESCENSO', 'SUSPENSIÓN', 'DESPEDIDO', 'RETIRADO'];
     $category = strtoupper(trim($category));
@@ -35,4 +36,5 @@ function rangers_add_agent_profile_update(string $agentId, string $category, str
     rangers_firebase_push('agent_profile_updates/' . $agentId, ['category'=>$category,'body'=>$body,'author'=>strtoupper($author),'at'=>$at]);
     $status = match ($category) { 'SUSPENSIÓN' => 'SUSPENDIDO', 'DESPEDIDO' => 'DESPEDIDO', 'RETIRADO' => 'RETIRADO', default => null };
     if ($status !== null) rangers_firebase_update('agents/' . $agentId, ['status'=>$status]);
+    rangers_notify_agent_profile_update_discord($agent, $category, $body, strtoupper($author), $at);
 }

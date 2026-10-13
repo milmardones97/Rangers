@@ -132,6 +132,37 @@ function rangers_notify_general_fine_discord(array $fine, string $publishedBy): 
     ], 15105570);
 }
 
+function rangers_notify_agent_profile_update_discord(array $agent, string $category, string $detail, string $publishedBy, string $at): bool
+{
+    $category = strtoupper(trim($category));
+    $colors = [
+        'SANCIÓN' => 15105570,
+        'DESPEDIDO' => 15158332,
+        'CONDECORACIÓN' => 15844367,
+        'ASCENSO' => 3066993,
+        'DESCENSO' => 0,
+        'SUSPENSIÓN' => 9807270,
+        'RETIRADO' => 3447003,
+    ];
+    if (!isset($colors[$category])) return false;
+
+    return rangers_discord_notify(
+        'DISCORD_AGENT_FILES_WEBHOOK_URL',
+        'SISPOL · Archivo de agentes',
+        $category . ' · ' . rangers_discord_text($agent['full_name'] ?? 'AGENTE SIN NOMBRE', 180),
+        [
+            ['name' => 'AGENTE', 'value' => rangers_discord_text($agent['full_name'] ?? ''), 'inline' => true],
+            ['name' => 'RANGO', 'value' => rangers_discord_text($agent['rank_name'] ?? ''), 'inline' => true],
+            ['name' => 'PLACA', 'value' => rangers_discord_text($agent['badge_code'] ?? ''), 'inline' => true],
+            ['name' => 'DETALLE', 'value' => rangers_discord_text($detail), 'inline' => false],
+            ['name' => 'REGISTRADO POR', 'value' => rangers_discord_text($publishedBy), 'inline' => true],
+            ['name' => 'FECHA', 'value' => rangers_discord_text($at), 'inline' => true],
+        ],
+        $colors[$category],
+        trim((string) ($agent['profile_image'] ?? ''))
+    );
+}
+
 function rangers_notify_criminal_profile_discord(array $criminal, string $publishedBy): bool
 {
     return rangers_discord_notify('DISCORD_CRIMINALS_WEBHOOK_URL', 'SISPOL · Base criminal', 'NUEVO PERFIL CRIMINAL · ' . rangers_discord_text($criminal['nombre'] ?? 'SIN NOMBRE', 100), [

@@ -7,9 +7,14 @@ require_once __DIR__ . '/../lib/agent_profiles.php';
 require_once __DIR__ . '/../lib/rank_icons.php';
 
 $id = trim((string) ($_GET['key'] ?? ''));
-$actor = strtoupper((string) ($_SESSION['usuario'] ?? 'USUARIO'));
+$actorName = strtoupper(trim((string) ($_SESSION['usuario'] ?? 'USUARIO')));
+$actorRank = strtoupper(trim((string) ($_SESSION['rango'] ?? '')));
+$actor = $actorRank === '' ? $actorName : $actorName . ' · ' . $actorRank;
 $notice = ''; $error = '';
 try {
+    $profile = rangers_agent_profile($id);
+    if (!$profile) throw new RuntimeException('Archivo de agente no encontrado.');
+    $agentForNotification = (array) ($profile['agent'] ?? []);
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (($_POST['action'] ?? '') === 'decorations') {
             $selected = (array) ($_POST['decorations'] ?? []);
@@ -17,10 +22,10 @@ try {
             $catalogForLog = require __DIR__ . '/../config/decorations.php';
             $names = array_map(fn($key) => $catalogForLog[$key]['name'] ?? '', $selected);
             $names = array_values(array_filter($names));
-            rangers_add_agent_profile_update($id, 'CONDECORACIÓN', $names === [] ? 'CONDECORACIONES RETIRADAS.' : 'CONDECORACIONES ASIGNADAS: ' . implode(' · ', $names), $actor, date('Y-m-d H:i'));
+            rangers_add_agent_profile_update($id, 'CONDECORACIÓN', $names === [] ? 'CONDECORACIONES RETIRADAS.' : 'CONDECORACIONES ASIGNADAS: ' . implode(' · ', $names), $actor, date('Y-m-d H:i'), $agentForNotification);
             $notice = 'CONDECORACIONES ACTUALIZADAS.';
         } else {
-            rangers_add_agent_profile_update($id, (string) ($_POST['categoria'] ?? ''), (string) ($_POST['detalle'] ?? ''), $actor, (string) ($_POST['fecha'] ?? ''));
+            rangers_add_agent_profile_update($id, (string) ($_POST['categoria'] ?? ''), (string) ($_POST['detalle'] ?? ''), $actor, (string) ($_POST['fecha'] ?? ''), $agentForNotification);
             $notice = 'ACTUALIZACIÓN REGISTRADA.';
         }
     }

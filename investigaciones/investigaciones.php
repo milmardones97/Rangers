@@ -208,7 +208,7 @@ window.sispolEvidenceItemCatalog = <?php echo json_encode($catalogoItemsEvidenci
 window.sispolEvidenceWeaponCatalog = <?php echo json_encode($catalogoArmasEvidencia, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 window.sispolVictimCharacterNames = <?php echo json_encode($nombresVictimas, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/investigaciones_db.js?v=evidence-summary-clean-1"></script>
+<script src="../js/investigaciones_db.js?v=evidence-hide-victim-1"></script>
 <script src="../loader_sispol.js"></script>
 </body>
 </html>

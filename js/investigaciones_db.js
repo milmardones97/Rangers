@@ -69,7 +69,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 Object.keys(entry).forEach(function (key) { record[String(key).toLowerCase()] = entry[key]; });
                 if (record.weaponid != null || record.armaitemid != null) fields.push(["ARMA", nombreArma(record)]);
                 Object.keys(record).forEach(function (key) {
-                    if (["weaponid", "armaitemid", "itemarmaid", "informeid", "fecharecogida"].includes(key)) return;
+                    if (["weaponid", "armaitemid", "itemarmaid", "informeid", "fecharecogida", "victimacharid", "victimcharid"].includes(key)) return;
                     var value = record[key];
                     if (key === "analizado") value = value === true || String(value).toLowerCase() === "true" || String(value) === "1" ? "SÍ" : "NO";
                     if (key === "bodypart" || key === "bodyparts") value = zonaCuerpo(value);

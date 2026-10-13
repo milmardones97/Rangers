@@ -21,6 +21,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var weaponCatalog = window.sispolEvidenceWeaponCatalog || {};
     var victimCharacterNames = window.sispolVictimCharacterNames || {};
     var bodyParts = { 3: "TORSO", 4: "TRASERO", 5: "BRAZO IZQUIERDO", 6: "BRAZO DERECHO", 7: "PIERNA IZQUIERDA", 8: "PIERNA DERECHA", 9: "CABEZA" };
+    var drugItemIds = new Set([60, 61, 62, 63, 64, 65, 66, 67, 68, 69]);
 
     if (!q || !btnBuscar || !caseList || !searchStatus || !resumenId || !resumenInforme || !itemsList || !timelineList) return;
 
@@ -151,6 +152,9 @@ document.addEventListener("DOMContentLoaded", function () {
             var data = document.createElement("div");
             data.className = "data-list";
             var detail = formatoMaterial(item.itemValor);
+            if (drugItemIds.has(Number(item.referenciaItemID)) && detail.narrative) {
+                detail = { fields: [["CANTIDAD", texto(detail.narrative) + " GRAMOS"]], narrative: "" };
+            }
             [["MATERIAL", itemName]].concat(detail.fields).concat([
                 ["GUARDADO POR", item.guardadoPorNombre],
                 ["FECHA", item.itemFecha]

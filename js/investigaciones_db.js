@@ -124,9 +124,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderInformePrincipal(informe) {
         resumenInforme.innerHTML = "";
         [
-            ["CREADOR ID", informe.creadorID],
             ["CREADOR", informe.creadorNombre],
-            ["FACTION ID", informe.factionID],
             ["ESTADO", informe.estado],
             ["PRIVADA", informe.privada],
             ["ÚLTIMA ACTIVIDAD", informe.ultima_actividad]

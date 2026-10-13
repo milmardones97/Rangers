@@ -93,12 +93,13 @@ document.addEventListener("DOMContentLoaded", function () {
             card.className = "item-card";
             var title = document.createElement("div");
             title.className = "item-card-title";
-            title.textContent = "ÍTEM DE EVIDENCIA #" + texto(item.evidenciaItemID);
+            var itemName = texto(item.referenciaItemNombre, "ÍTEM SIN IDENTIFICAR");
+            title.textContent = "ÍTEM ASOCIADO: " + itemName;
             var data = document.createElement("div");
             data.className = "data-list";
             [
-                ["ID ÍTEM", item.evidenciaItemID],
-                ["REFERENCIA ITEM ID", item.referenciaItemID],
+                ["ID DE REGISTRO", item.evidenciaItemID],
+                ["ÍTEM", itemName + " (ID " + texto(item.referenciaItemID) + ")"],
                 ["VALOR", item.itemValor],
                 ["GUARDADO POR ID", item.guardadoPorID],
                 ["GUARDADO POR", item.guardadoPorNombre],

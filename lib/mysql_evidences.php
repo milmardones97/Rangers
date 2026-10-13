@@ -2,12 +2,23 @@
 
 require_once __DIR__ . '/mysql_general_fines.php';
 
+/** @return array<int, string> */
+function rangers_evidence_item_catalog(): array
+{
+    static $catalog = null;
+    if ($catalog === null) {
+        $catalog = require __DIR__ . '/evidence_item_catalog.php';
+    }
+    return $catalog;
+}
+
 /**
  * Obtiene los informes de evidencia operativos y reúne las relaciones que la
  * consulta plana devuelve repetidas al combinar ítems con respuestas.
  */
 function rangers_mysql_evidence_reports(): array
 {
+    $itemCatalog = rangers_evidence_item_catalog();
     $sql = <<<'SQL'
 SELECT
     e.id AS evidenciaID,
@@ -68,6 +79,7 @@ SQL;
             $reports[$evidenceId]['items'][$itemKey] = [
                 'evidenciaItemID' => $itemKey,
                 'referenciaItemID' => (string) ($row['referenciaItemID'] ?? ''),
+                'referenciaItemNombre' => $itemCatalog[(int) ($row['referenciaItemID'] ?? 0)] ?? '',
                 'itemValor' => (string) ($row['itemValor'] ?? ''),
                 'guardadoPorID' => (string) ($row['guardadoPorID'] ?? ''),
                 'guardadoPorNombre' => (string) ($row['guardadoPorNombre'] ?? ''),
@@ -91,6 +103,12 @@ SQL;
 
     foreach ($reports as &$report) {
         $report['items'] = array_values($report['items']);
+        usort($report['items'], static function (array $left, array $right): int {
+            $leftReference = (int) ($left['referenciaItemID'] ?? 0);
+            $rightReference = (int) ($right['referenciaItemID'] ?? 0);
+            return ($leftReference <=> $rightReference)
+                ?: ((int) ($left['evidenciaItemID'] ?? 0) <=> (int) ($right['evidenciaItemID'] ?? 0));
+        });
         $report['respuestas'] = array_values($report['respuestas']);
     }
     unset($report);

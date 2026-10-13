@@ -19,6 +19,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var searchTimer = null;
     var itemCatalog = window.sispolEvidenceItemCatalog || {};
     var weaponCatalog = window.sispolEvidenceWeaponCatalog || {};
+    var victimCharacterNames = window.sispolVictimCharacterNames || {};
     var bodyParts = { 3: "TORSO", 4: "TRASERO", 5: "BRAZO IZQUIERDO", 6: "BRAZO DERECHO", 7: "PIERNA IZQUIERDA", 8: "PIERNA DERECHA", 9: "CABEZA" };
 
     if (!q || !btnBuscar || !caseList || !searchStatus || !resumenId || !resumenInforme || !itemsList || !timelineList) return;
@@ -41,7 +42,7 @@ document.addEventListener("DOMContentLoaded", function () {
             cantidad: "CANTIDAD", calibre: "CALIBRE", tipo: "TIPO", casquillos: "CASQUILLOS",
             whetstone: "LUGAR DE ORIGEN", origen: "ORIGEN", analizado: "ANALIZADO",
             bodypart: "ZONA DEL CUERPO", bodyparts: "ZONAS DEL CUERPO",
-            victimacharid: "VÍCTIMA (CHARACTER ID)", victimcharid: "VÍCTIMA (CHARACTER ID)"
+            victimacharid: "VÍCTIMA", victimcharid: "VÍCTIMA"
         };
         return labels[key] || key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/_/g, " ").toUpperCase();
     }
@@ -72,6 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     var value = record[key];
                     if (key === "analizado") value = value === true || String(value).toLowerCase() === "true" || String(value) === "1" ? "SÍ" : "NO";
                     if (key === "bodypart" || key === "bodyparts") value = zonaCuerpo(value);
+                    if (key === "victimacharid" || key === "victimcharid") value = victimCharacterNames[String(value)] || "CHARACTER ID " + texto(value);
                     if (typeof value === "object") value = Array.isArray(value) ? value.join(", ") : JSON.stringify(value);
                     fields.push([etiquetaCampoForense(key), value]);
                 });

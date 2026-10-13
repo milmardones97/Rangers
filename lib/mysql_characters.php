@@ -40,6 +40,34 @@ function rangers_mysql_character_jail_states(array $characterIds): array
     return $states;
 }
 
+/** @return array<string, string> Character ID => CharacterName */
+function rangers_mysql_character_names_by_ids(array $characterIds): array
+{
+    $characterIds = array_values(array_unique(array_filter(array_map(
+        fn($id) => preg_replace('/\D+/', '', (string) $id),
+        $characterIds
+    ), fn($id) => $id !== '')));
+    if ($characterIds === []) return [];
+
+    $params = [];
+    $placeholders = [];
+    foreach ($characterIds as $index => $characterId) {
+        $key = ':character_' . $index;
+        $placeholders[] = $key;
+        $params[$key] = $characterId;
+    }
+    $statement = rangers_mysql_general_fines_connection()->prepare(
+        'SELECT characterID, characterName FROM characters WHERE characterID IN (' . implode(', ', $placeholders) . ')'
+    );
+    $statement->execute($params);
+    $names = [];
+    foreach ($statement->fetchAll() as $row) {
+        $characterId = (string) ($row['characterID'] ?? '');
+        if ($characterId !== '') $names[$characterId] = strtoupper(trim((string) ($row['characterName'] ?? '')));
+    }
+    return $names;
+}
+
 function rangers_mysql_character_fine_count(string $characterId, string $characterName = ''): int
 {
     $characterId = trim($characterId);

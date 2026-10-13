@@ -14,6 +14,7 @@ require_once __DIR__ . '/../lib/mysql_evidences.php';
 // Este módulo es sólo de lectura y refleja exclusivamente los informes
 // disponibles en la base de datos operativa de evidencias.
 try { $investigaciones = rangers_mysql_evidence_reports(); } catch (Throwable $exception) { $investigaciones = []; }
+try { $nombresVictimas = rangers_mysql_character_names_by_ids(rangers_evidence_victim_character_ids($investigaciones)); } catch (Throwable $exception) { $nombresVictimas = []; }
 $catalogoItemsEvidencia = rangers_evidence_item_catalog();
 $catalogoArmasEvidencia = require __DIR__ . '/../lib/evidence_weapon_catalog.php';
 ?>
@@ -205,8 +206,9 @@ window.sispolInvestigacionesData = <?php echo json_encode($investigaciones, JSON
 window.sispolSelectedCaseId = <?php echo json_encode($selectedCaseId, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 window.sispolEvidenceItemCatalog = <?php echo json_encode($catalogoItemsEvidencia, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 window.sispolEvidenceWeaponCatalog = <?php echo json_encode($catalogoArmasEvidencia, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
+window.sispolVictimCharacterNames = <?php echo json_encode($nombresVictimas, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?>;
 </script>
-<script src="../js/investigaciones_db.js?v=evidence-forensic-format-1"></script>
+<script src="../js/investigaciones_db.js?v=evidence-victim-names-1"></script>
 <script src="../loader_sispol.js"></script>
 </body>
 </html>

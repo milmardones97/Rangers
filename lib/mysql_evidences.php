@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/mysql_general_fines.php';
+require_once __DIR__ . '/mysql_characters.php';
 
 /** @return array<int, string> */
 function rangers_evidence_item_catalog(): array
@@ -114,4 +115,29 @@ SQL;
     unset($report);
 
     return array_values($reports);
+}
+
+/** Extrae los Character ID de víctima almacenados dentro de los valores JSON forenses. */
+function rangers_evidence_victim_character_ids(array $reports): array
+{
+    $ids = [];
+    $inspect = static function ($value) use (&$inspect, &$ids): void {
+        if (!is_array($value)) return;
+        foreach ($value as $key => $entry) {
+            $normalizedKey = strtolower((string) $key);
+            if (($normalizedKey === 'victimacharid' || $normalizedKey === 'victimcharid') && is_scalar($entry)) {
+                $id = preg_replace('/\D+/', '', (string) $entry);
+                if ($id !== '') $ids[$id] = true;
+            }
+            if (is_array($entry)) $inspect($entry);
+        }
+    };
+
+    foreach ($reports as $report) {
+        foreach (($report['items'] ?? []) as $item) {
+            $value = json_decode((string) ($item['itemValor'] ?? ''), true);
+            if (is_array($value)) $inspect($value);
+        }
+    }
+    return array_keys($ids);
 }

@@ -46,6 +46,13 @@ try {
     }
 } catch (Throwable $exception) {
 }
+
+$agentesActivos = [];
+$agentesInactivos = [];
+foreach ($agentes as $agente) {
+    if (strtoupper(trim((string) ($agente['estatus'] ?? ''))) === 'INACTIVO') $agentesInactivos[] = $agente;
+    else $agentesActivos[] = $agente;
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -244,6 +251,17 @@ try {
             text-align:center;
         }
 
+        .section-label{
+            margin:24px 0 10px;
+            padding:9px 12px;
+            border-left:4px solid #9a9a9a;
+            background:rgba(110,110,110,.14);
+            color:#d0d0d0;
+            font-size:17px;
+            font-weight:bold;
+            text-transform:uppercase;
+        }
+
         .agentes-list{
             list-style:none;
             padding:0;
@@ -361,6 +379,7 @@ try {
         .cell-estatus.estado-suspendido{ color:#f0d45e; }
         .cell-estatus.estado-retirado{ color:#d8d8d8; }
         .cell-estatus.estado-baja{ color:#ff8f8f; }
+        .cell-estatus.estado-inactivo{ color:#b6b6b6; }
 
         .bottom-actions{
             display:flex;
@@ -545,13 +564,14 @@ try {
     </div>
 
     <ul class="agentes-list" id="listaAgentes">
-        <?php foreach ($agentes as $i => $agente): ?>
+        <?php foreach ($agentesActivos as $i => $agente): ?>
             <?php
                 $estatusRaw = strtoupper(trim($agente['estatus']));
                 $estatusClass = 'estado-activo';
                 if ($estatusRaw === 'SUSPENDIDO') $estatusClass = 'estado-suspendido';
                 if ($estatusRaw === 'RETIRADO')   $estatusClass = 'estado-retirado';
                 if ($estatusRaw === 'BAJA')       $estatusClass = 'estado-baja';
+                if ($estatusRaw === 'INACTIVO')   $estatusClass = 'estado-inactivo';
             ?>
             <li class="agente-item"
                 data-link="<?php echo htmlspecialchars($agente['link']); ?>"
@@ -574,6 +594,36 @@ try {
             </li>
         <?php endforeach; ?>
     </ul>
+
+    <?php if ($agentesInactivos !== []): ?>
+        <div class="section-label">Agentes inactivos</div>
+        <ul class="agentes-list" id="listaAgentesInactivos">
+            <?php foreach ($agentesInactivos as $i => $agente): ?>
+                <?php
+                    $estatusRaw = strtoupper(trim($agente['estatus']));
+                    $estatusClass = 'estado-inactivo';
+                ?>
+                <li class="agente-item"
+                    data-link="<?php echo htmlspecialchars($agente['link']); ?>"
+                    data-index="<?php echo count($agentesActivos) + $i; ?>">
+                    <div class="cell-index"><?php echo $i + 1; ?></div>
+
+                    <div class="cell-nombre agente-main">
+                        <?php if (!empty($agente['imagen'])): ?>
+                            <img class="agent-photo" src="<?php echo htmlspecialchars($agente['imagen']); ?>" alt="Perfil de <?php echo htmlspecialchars($agente['nombre']); ?>">
+                        <?php else: ?>
+                            <span class="agent-photo empty">SIN<br>FOTO</span>
+                        <?php endif; ?>
+                        <span><?php echo htmlspecialchars(strtoupper($agente['nombre'])); ?></span>
+                    </div>
+
+                    <div class="cell-rango"><?php if ($icon = rangers_rank_icon_url($agente['rango'])): ?><img class="rank-icon" src="<?php echo htmlspecialchars($icon); ?>" alt=""><?php endif; ?><?php echo htmlspecialchars(strtoupper($agente['rango'])); ?></div>
+                    <div class="cell-fecha"><?php echo htmlspecialchars($agente['fecha_ingreso']); ?></div>
+                    <div class="cell-estatus <?php echo $estatusClass; ?>"><?php echo htmlspecialchars($estatusRaw); ?></div>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+    <?php endif; ?>
 
     <div class="separator boot-line" id="boot5"></div>
 

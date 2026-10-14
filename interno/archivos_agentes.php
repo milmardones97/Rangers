@@ -50,7 +50,7 @@ try {
 $agentesActivos = [];
 $agentesInactivos = [];
 foreach ($agentes as $agente) {
-    if (strtoupper(trim((string) ($agente['estatus'] ?? ''))) === 'INACTIVO') $agentesInactivos[] = $agente;
+    if (in_array(strtoupper(trim((string) ($agente['estatus'] ?? ''))), ['INACTIVO', 'DESPEDIDO', 'RETIRADO'], true)) $agentesInactivos[] = $agente;
     else $agentesActivos[] = $agente;
 }
 ?>
@@ -596,12 +596,14 @@ foreach ($agentes as $agente) {
     </ul>
 
     <?php if ($agentesInactivos !== []): ?>
-        <div class="section-label">Agentes inactivos</div>
+        <div class="section-label">Agentes inactivos, retirados y despedidos</div>
         <ul class="agentes-list" id="listaAgentesInactivos">
             <?php foreach ($agentesInactivos as $i => $agente): ?>
                 <?php
                     $estatusRaw = strtoupper(trim($agente['estatus']));
                     $estatusClass = 'estado-inactivo';
+                    if ($estatusRaw === 'RETIRADO') $estatusClass = 'estado-retirado';
+                    if ($estatusRaw === 'DESPEDIDO') $estatusClass = 'estado-baja';
                 ?>
                 <li class="agente-item"
                     data-link="<?php echo htmlspecialchars($agente['link']); ?>"
